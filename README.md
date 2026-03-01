@@ -87,7 +87,7 @@ researchscope-nlp-healthcare/
 
 ---
 
-## 🧰 Dependencies
+## Dependencies
 
 ```
 pdfplumber, nltk, spacy, scikit-learn, gensim, pandas, numpy, matplotlib, seaborn, streamlit
@@ -101,7 +101,7 @@ python -m spacy download en_core_web_sm
 
 ---
 
-## 🚀 Running the Application
+## Running the Application
 
 ```bash
 streamlit run app.py
@@ -111,7 +111,7 @@ Then click **"Load Research Corpus"** in the sidebar.
 
 ---
 
-## ⚠️ Limitations
+## Limitations
 
 This system is a **Milestone 1 prototype** using traditional NLP only. The following known limitations apply:
 
@@ -125,7 +125,7 @@ This system is a **Milestone 1 prototype** using traditional NLP only. The follo
 
 ---
 
-## 🔧 Optimization Strategy
+## Optimization Strategy
 
 The system employs several classical strategies for quality improvement:
 
@@ -137,7 +137,7 @@ The system employs several classical strategies for quality improvement:
 
 ---
 
-## 🚫 Constraints
+## Constraints
 
 - No OpenAI, Gemini, Claude, or any LLM
 - No Transformers or deep learning models

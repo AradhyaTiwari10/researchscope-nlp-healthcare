@@ -12,12 +12,12 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # Import our custom modules
-from src.data_loader import load_dataset
-from src.preprocessing import preprocess_corpus
-from src.feature_extraction import extract_tfidf_features, get_top_keywords_per_doc, get_global_top_terms
-from src.topic_modeling import prepare_gensim_objects, train_lda_model, get_topics, get_doc_topics
-from src.evaluation import compute_coherence_score
-from src.summarization import extract_summary
+from pdf_extractor import load_dataset
+from preprocessing import preprocess_corpus
+from feature_engineering import extract_tfidf_features, get_top_keywords_per_doc, get_global_top_terms
+from topic_modeling import prepare_gensim_objects, train_lda_model, get_topics, get_doc_topics, compute_coherence_score
+from summarizer import extract_summary
+from visualization import plot_global_keywords, plot_document_keywords
 
 # Set UI Configuration
 st.set_page_config(
@@ -139,18 +139,11 @@ if 'documents' in st.session_state:
     st.header("🔑 Global Keyword Landscape")
     st.info("💡 **Traditional NLP Checkpoint:** Global scores are calculated by summing TF-IDF weights across the entire corpus.")
     
-    df_global = pd.DataFrame(global_terms, columns=["Term", "Importance Score"])
-    
-    fig, ax = plt.subplots(figsize=(10, 5))
-    sns.barplot(data=df_global, x="Importance Score", y="Term", palette="Blues_r", ax=ax)
-    plt.title("Most Significant Terms Across Corpus", fontsize=14, color="#1e293b")
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    st.pyplot(fig)
+    plot_global_keywords(global_terms)
 
     # --- Section: Topic Modeling ---
     st.divider()
-    st.header("🧬 Latent Topic Analysis (LDA)")
+    st.header("Latent Topic Analysis (LDA)")
     st.markdown("Discovering hidden semantic structures using unsupervised probabilistic modeling.")
     
     num_topics = st.select_slider("Select Number of Latent Topics (K)", options=range(2, 11), value=5)
@@ -173,7 +166,7 @@ if 'documents' in st.session_state:
 
     # --- Section: Individual Summaries ---
     st.divider()
-    st.header("📝 Extractive Research Summary")
+    st.header("Extractive Research Summary")
     st.markdown("Identifying and ranking high-information sentences using sentence-level TF-IDF weights. No text generation is performed.")
     
     doc_idx = st.selectbox("Select a Research Paper to Analyze", range(len(docs)), format_func=lambda x: f"Document {x+1} - {len(docs[x].split())} words")
@@ -210,9 +203,7 @@ if 'documents' in st.session_state:
         # Add a mini bar chart for this specific doc's keywords if possible
         doc_tfidf = tfidf_matrix.getrow(doc_idx).toarray().flatten()
         feat_names = vectorizer.get_feature_names_out()
-        top_indices = doc_tfidf.argsort()[::-1][:10]
-        doc_df = pd.DataFrame({"Term": feat_names[top_indices], "Score": doc_tfidf[top_indices]})
-        st.bar_chart(doc_df.set_index("Term"))
+        plot_document_keywords(doc_tfidf, feat_names)
 
 else:
     st.info("👈 **Getting Started:** Click the sidebar button to ingest the research papers from the 'data/raw' directory.")
