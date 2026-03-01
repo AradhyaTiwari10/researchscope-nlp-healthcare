@@ -45,6 +45,11 @@ st.markdown("""
     .st-emotion-cache-1kyxreq {
         justify-content: center;
     }
+    .summary-box textarea {
+        background-color: #f5f5f5 !important;
+        color: #000000 !important;
+        font-size: 14px !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -109,7 +114,7 @@ if 'documents' in st.session_state:
     st.header("🧬 Latent Topic Analysis (LDA)")
     st.markdown("Discovering hidden semantic structures using unsupervised probabilistic modeling.")
     
-    num_topics = st.select_slider("Select Number of Topics (K)", options=range(2, 11), value=5)
+    num_topics = st.select_slider("Select Number of Latent Topics (K)", options=range(2, 11), value=5)
     
     with st.spinner("🪄 Training Generative LDA Model (Traditional)..."):
         dictionary, gensim_corpus = prepare_gensim_objects(processed_docs)
@@ -129,8 +134,8 @@ if 'documents' in st.session_state:
 
     # --- Section: Individual Summaries ---
     st.divider()
-    st.header("📝 Intelligent Document Summarization")
-    st.markdown("Extracting critical sentences based on weighted sentence-level TF-IDF importance.")
+    st.header("📝 Extractive Research Summary")
+    st.markdown("Identifying and ranking high-information sentences using sentence-level TF-IDF weights. No text generation is performed.")
     
     doc_idx = st.selectbox("Select a Research Paper to Analyze", range(len(docs)), format_func=lambda x: f"Document {x+1} - {len(docs[x].split())} words")
     
@@ -139,7 +144,25 @@ if 'documents' in st.session_state:
     with col_sum_1:
         st.subheader("Extractive Summary")
         summary_text = extract_summary(docs[doc_idx], top_n=5)
-        st.markdown(f'<div style="text-align: justify; background: #ffffff; padding: 20px; border-radius: 10px; border-left: 5px solid #3b82f6;">{summary_text}</div>', unsafe_allow_html=True)
+        st.markdown(
+            f"""
+            <div style="
+                background-color: #ffffff;
+                color: #000000;
+                padding: 20px;
+                border-radius: 10px;
+                border-left: 5px solid #3b82f6;
+                font-size: 14px;
+                line-height: 1.7;
+                text-align: justify;
+                max-height: 400px;
+                overflow-y: auto;
+            ">
+            {summary_text}
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
         
     with col_sum_2:
         st.subheader("Key Tokens")
@@ -155,3 +178,7 @@ if 'documents' in st.session_state:
 else:
     st.info("👈 **Getting Started:** Click the sidebar button to ingest the research papers from the 'data/raw' directory.")
     st.image("https://plus.unsplash.com/premium_photo-1673953509975-576678fa6710?q=80&w=2070&auto=format&fit=crop", caption="Unlocking Healthcare Insights via NLP")
+
+# Footer
+st.markdown("---")
+st.caption("Built using Traditional NLP · NLTK · spaCy · TF-IDF (scikit-learn) · LDA + Coherence (Gensim) · No LLMs used")
