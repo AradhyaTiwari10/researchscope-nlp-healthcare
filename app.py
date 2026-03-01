@@ -1,4 +1,5 @@
 import streamlit as st
+import os
 from src.pdf_extractor import extract_text_from_pdf
 from src.preprocessing import preprocess_text
 from src.feature_engineering import extract_tfidf
@@ -20,8 +21,33 @@ with st.sidebar:
     This system uses **Classical NLP** (no LLMs) to analyze healthcare research. 
     It identifies key topics, evaluates document similarity, and generates summaries.
     """)
-    st.markdown("---")
+    st.divider()
     st.markdown("**Milestone 1:** Topic Modeling & Text Analytics")
+    
+    # Preloaded Data Button in Sidebar
+    st.header("Demo Mode")
+    if st.button("🚀 Load Preloaded Research Papers"):
+        demo_dir = "data/raw"
+        demo_files = [f for f in os.listdir(demo_dir) if f.endswith(".pdf")]
+        
+        raw_texts = []
+        file_names = []
+        corpus = []
+        
+        with st.status("Loading 10 Research Papers...", expanded=True) as status:
+            for f in demo_files:
+                path = os.path.join(demo_dir, f)
+                with open(path, "rb") as pdf_file:
+                    text = extract_text_from_pdf(pdf_file)
+                    raw_texts.append(text)
+                    file_names.append(f)
+                    corpus.append(preprocess_text(text))
+            status.update(label="Demo Data Loaded!", state="complete", expanded=False)
+        
+        st.session_state["raw_texts"] = raw_texts
+        st.session_state["file_names"] = file_names
+        st.session_state["corpus"] = corpus
+        st.rerun()
 
 # 2. File Upload
 uploaded_files = st.file_uploader(
@@ -35,7 +61,6 @@ if uploaded_files:
     corpus = []
     raw_texts = []
     
-    # Progress Bar for Processing
     with st.status("Preprocessing PDFs...", expanded=True) as status:
         for file in uploaded_files:
             raw_text = extract_text_from_pdf(file)
@@ -43,6 +68,16 @@ if uploaded_files:
             processed = preprocess_text(raw_text)
             corpus.append(processed)
         status.update(label="Preprocessing Complete!", state="complete", expanded=False)
+    
+    st.session_state["raw_texts"] = raw_texts
+    st.session_state["file_names"] = file_names
+    st.session_state["corpus"] = corpus
+
+# Check if we have data to display
+if "corpus" in st.session_state and st.session_state["corpus"]:
+    corpus = st.session_state["corpus"]
+    file_names = st.session_state["file_names"]
+    raw_texts = st.session_state["raw_texts"]
 
     # A) Feature Engineering (TF-IDF)
     X, vectorizer = extract_tfidf(corpus)
@@ -118,12 +153,3 @@ if uploaded_files:
         summary = extractive_summary(raw_texts[selected_index])
         st.write(f"**Summary of {selected_doc}:**")
         st.write(summary)
-
-    # Debug Section (Footer)
-    st.markdown("---")
-    with st.expander("Developer Debugging info"):
-        st.write(f"**Total Documents:** {len(corpus)}")
-        st.write(f"**TF-IDF Matrix Shape:** {X.shape}")
-        if corpus:
-            st.write("**Snippet of Cleaned Text (Doc 1):**")
-            st.write(" ".join(corpus[0].split()[:200]) + "...")

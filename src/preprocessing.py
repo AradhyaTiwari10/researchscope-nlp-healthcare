@@ -33,11 +33,25 @@ stop_words = set(stopwords.words("english")).union(custom_stopwords)
 
 
 def clean_text(text):
+    # Normalize ligatures (common in PDFs: fi, fl, ff, ffi, ffl)
+    ligatures = {
+        "ﬁ": "fi", "ﬂ": "fl", "ﬀ": "ff", "ﬃ": "ffi", "ﬄ": "ffl",
+        "ﬅ": "st", "ﬆ": "st", "Æ": "AE", "æ": "ae", "Œ": "OE", "œ": "oe"
+    }
+    for l, r in ligatures.items():
+        text = text.replace(l, r)
+
     # 1. Fix Hyphenation (words split across lines or spaces like "technol- ogy" or "technol-\nogy")
     text = re.sub(r'([A-Za-z]+)-\s+([A-Za-z]+)', r'\1\2', text)
     
     # 2. Remove ALL CAPS headers/metadata (like "REVIEW ARTICLE", "HISTORY Received:")
     text = re.sub(r'\b[A-Z][A-Z\s]+[A-Z]\b:?', " ", text)
+    
+    # Remove complex OCR/PDF artifacts like /g415, /e190, etc.
+    text = re.sub(r'/[a-z]\d+', " ", text, flags=re.IGNORECASE)
+    
+    # Remove symbols like copyright, registration
+    text = re.sub(r'[©®™]', " ", text)
     
     # Remove emails
     text = re.sub(r"\S+@\S+", " ", text)
