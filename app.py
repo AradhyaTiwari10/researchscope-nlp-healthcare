@@ -27,17 +27,17 @@ if uploaded_files:
         processed = preprocess_text(raw_text)
         corpus.append(processed)
 
-    # D) Debug Step
+    # Debug Section
     with st.expander("Debug: Parsed Corpus (First 300 words of first document)"):
         if corpus:
             st.write(" ".join(corpus[0].split()[:300]))
 
-    # C) Extract TF-IDF
+    # Feature Engineering
     X, vectorizer = extract_tfidf(corpus)
     
     st.subheader("Topic Modeling & Analysis")
     
-    # 2. Topic Modeling (4 Topics)
+    # LDA Analysis
     lda_model = perform_lda(X, num_topics=4)
     topics = display_topics(lda_model, vectorizer.get_feature_names_out())
     
