@@ -47,19 +47,28 @@ def clean_for_summary(text):
     
     return text
 
+# Hard cap: never return more than 5 sentences regardless of caller's top_n
+MAX_SENTENCES = 5
+
 def extract_summary(text, top_n=5):
     """
     Ranks sentences by their TF-IDF scores within the current document text 
-    and returns a summary of the top N sentences.
+    and returns the top N sentences (capped at 5) in original order.
     """
+    # Enforce hard cap to keep summaries readable
+    top_n = min(top_n, MAX_SENTENCES)
+
     # Pre-cleaning to remove non-narrative noise
     cleaned_text = clean_for_summary(text)
     
     # 1. Tokenize document into sentences
-    sentences = sent_tokenize(cleaned_text)
-    
+    all_sentences = sent_tokenize(cleaned_text)
+
+    # 2. Filter stub sentences — skip header lines, labels, and short fragments
+    sentences = [s for s in all_sentences if len(s.split()) >= 8]
+
     if len(sentences) <= top_n:
-        return cleaned_text 
+        return " ".join(sentences[:top_n])
 
     # 2. Vectorize sentences as a pseudo-corpus of the document
     vectorizer = TfidfVectorizer(stop_words='english')
