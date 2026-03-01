@@ -50,6 +50,27 @@ st.markdown("""
         color: #000000 !important;
         font-size: 14px !important;
     }
+    .stat-card {
+        background-color: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 20px 24px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        text-align: center;
+    }
+    .stat-card .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+    }
+    .stat-card .stat-label {
+        font-size: 0.85rem;
+        color: #64748b;
+        margin-top: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -81,10 +102,28 @@ if 'documents' in st.session_state:
     
     # 1. Overview metrics
     st.subheader("📊 Corpus Overview")
+    total_tokens = sum(len(d.split()) for d in docs)
+    avg_length = total_tokens // len(docs) if docs else 0
     m1, m2, m3 = st.columns(3)
-    m1.metric("Documents Processed", len(docs))
-    m2.metric("Total Tokens", sum(len(d.split()) for d in docs))
-    m3.metric("Architecture", "Traditional (v1.1)")
+    with m1:
+        st.markdown(
+            f'<div class="stat-card"><p class="stat-value">{len(docs)}</p>'
+            f'<p class="stat-label">Papers Ingested</p></div>',
+            unsafe_allow_html=True
+        )
+    with m2:
+        st.markdown(
+            f'<div class="stat-card"><p class="stat-value">{total_tokens:,}</p>'
+            f'<p class="stat-label">Total Tokens</p></div>',
+            unsafe_allow_html=True
+        )
+    with m3:
+        st.markdown(
+            f'<div class="stat-card"><p class="stat-value">~{avg_length:,}</p>'
+            f'<p class="stat-label">Avg. Tokens / Paper</p></div>',
+            unsafe_allow_html=True
+        )
+    st.markdown("<br>", unsafe_allow_html=True)
     
     # --- Preprocessing and Feature Extraction ---
     with st.spinner("🔄 Running spaCy/NLTK Preprocessing Pipeline..."):
