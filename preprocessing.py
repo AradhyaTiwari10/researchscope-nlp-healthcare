@@ -23,7 +23,10 @@ custom_stopwords = {
     "present", "compare", "part", "show", "sect",
     "perform", "paper", "usually", "dataset", "need",
     "central", "start", "link", "layer", "group", "apply", "stress",
-    "machine", "learn", "learning", "algorithm" # We know it's about ML, so these can dominate unhelpfully
+    "machine", "learn", "learning", "algorithm", # We know it's about ML, so these can dominate unhelpfully
+    "aim", "provide", "include", "discuss", "give", "discus", # Verb noise
+    "ion", "property", "condition", "promising", "investigation", "type", "room", # From Topic 1 noise
+    "used", "become", "since", "advent" # More transition/generic words
 }
 
 stop_words = set(stopwords.words("english")).union(custom_stopwords)
@@ -56,7 +59,11 @@ def clean_text(text):
     # remove 1-2 letter words (this strips acronyms like 'AI')
     text = re.sub(r"\b[A-Za-z]{1,2}\b", " ", text)
     
-    # 3. Clean up empty parentheses left behind when acronyms are stripped (e.g. " ( ) ")
+    # 3. Handle artifacts from short word removal (e.g., "AI-based" -> "-based")
+    text = re.sub(r"\s+-\b", " ", text) # remove spaces followed by a dash (trailing dash)
+    text = re.sub(r"\b-\s+", " ", text) # remove dash followed by space (leading dash)
+    
+    # 4. Clean up empty parentheses left behind when acronyms are stripped (e.g. " ( ) ")
     text = re.sub(r"\(\s*\)", " ", text)
     
     text = re.sub(r"\s+", " ", text).strip()
