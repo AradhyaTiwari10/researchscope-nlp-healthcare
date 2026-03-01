@@ -44,40 +44,85 @@ def remove_references_section(text):
     )
     return parts[0]
 
+def fix_hyphenation(text):
+    """
+    Rejoins words broken by PDF line-wrap hyphenation.
+    e.g. 'Net-\ntive' → 'Nettive', 'algo-\nrithm' → 'algorithm'.
+    Must run before newline normalization.
+    """
+    # Case 1: hyphen immediately followed by newline (with optional spaces)
+    text = re.sub(r"-\s*\n\s*", "", text)
+    return text
+
+def normalize_newlines(text):
+    """
+    Merges hard newlines mid-sentence. Scientific PDFs insert line breaks
+    at column boundaries that break sentence tokenizers.
+    Only merges when the next line starts with a lowercase letter
+    (i.e. not a new sentence or section header).
+    """
+    # Newline followed by a lowercase letter → part of current sentence
+    text = re.sub(r"\n(?=[a-z])", " ", text)
+    return text
+
+def remove_fragmented_lines(text):
+    """
+    Removes short, noise-heavy lines that originate from:
+    – Table rows / column headers
+    – Figure label lines
+    – Excessive numeric reference rows
+    """
+    lines = text.split("\n")
+    cleaned = []
+
+    for line in lines:
+        stripped = line.strip()
+
+        # Drop lines that are too short to be a narrative sentence
+        if len(stripped) < 20:
+            continue
+
+        # Drop lines that are dominated by digits (table cells, reference IDs)
+        if len(re.findall(r"\d", stripped)) > 5:
+            continue
+
+        cleaned.append(stripped)
+
+    return " ".join(cleaned)
+
 def clean_for_summary(text):
     """
     Strips metadata, identifiers, and citation noise from research text
     to improve sentence ranking quality.
+    NOTE: Assumes remove_references_section() and PDF normalization have
+    already been applied upstream in extract_summary().
     """
-    # 1. Cut at references section first (highest-value cleanup)
-    text = remove_references_section(text)
-
-    # 2. Remove article history blocks
+    # 1. Remove article history blocks
     text = re.sub(r"ARTICLE HISTORY.*", "", text, flags=re.IGNORECASE)
 
-    # 3. Remove emails
+    # 2. Remove emails
     text = re.sub(r"\S+@\S+", "", text)
 
-    # 4. Remove URLs
+    # 3. Remove URLs
     text = re.sub(r"http\S+|www\.\S+", "", text)
 
-    # 5. Remove DOI identifiers (case-insensitive)
+    # 4. Remove DOI identifiers (case-insensitive)
     text = re.sub(r"doi:\s*\S+", "", text, flags=re.IGNORECASE)
     text = re.sub(r"10\.\d{4,}/\S+", "", text)  # Raw DOI format
 
-    # 6. Remove PMID references
+    # 5. Remove PMID references
     text = re.sub(r"PMID:\s*\d+", "", text, flags=re.IGNORECASE)
 
-    # 7. Remove inline citation brackets: [1], [12-15], [1,2,3]
+    # 6. Remove inline citation brackets: [1], [12-15], [1,2,3]
     text = re.sub(r"\[\d[\d,\s\-]*\]", "", text)
 
-    # 8. Remove (Author et al., YYYY) style citations
+    # 7. Remove (Author et al., YYYY) style citations
     text = re.sub(r"\(\w[\w\s]+et al\.,?\s*\d{4}\)", "", text)
 
-    # 9. Remove 4-digit year clusters (reference lists, e.g. 2018, 2019, 2020)
+    # 8. Remove 4-digit year clusters (reference lists)
     text = re.sub(r"\b(19|20)\d{2}\b", "", text)
 
-    # 10. Normalize whitespace
+    # 9. Normalize whitespace
     text = re.sub(r"[ \t]+", " ", text)
     text = re.sub(r"\n{3,}", "\n\n", text)
 
@@ -115,11 +160,28 @@ def extract_summary(text, top_n=5):
     """
     Extracts the top N informative sentences from a research document using
     length-normalized TF-IDF sentence scoring.
+
+    Cleaning pipeline:
+      1. Remove references section
+      2. Fix PDF hyphenation artifacts
+      3. Normalize mid-sentence newlines
+      4. Strip fragmented table/figure lines
+      5. Strip metadata identifiers (URLs, DOIs, emails, citations)
+      6. Filter stub sentences
+      7. Score and rank by length-normalized TF-IDF
     """
     # Hard cap
     top_n = min(top_n, MAX_SENTENCES)
 
-    # Stage 1: Text cleaning
+    # Stage 1: References section removal (do this before any line processing)
+    text = remove_references_section(text)
+
+    # Stage 2: PDF-level normalization
+    text = fix_hyphenation(text)
+    text = normalize_newlines(text)
+    text = remove_fragmented_lines(text)
+
+    # Stage 3: Metadata / identifier cleaning
     cleaned_text = clean_for_summary(text)
 
     # Stage 2: Sentence tokenization
