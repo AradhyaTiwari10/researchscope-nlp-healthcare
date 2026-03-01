@@ -1,214 +1,46 @@
-"""
-AI in Healthcare: Research Analysis System (Main Application)
-
-This UI integrates the entire traditional NLP pipeline from document loading 
-to summarization and topic modeling for research-driven healthcare analysis.
-"""
-
-import os
 import streamlit as st
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
+from pdf_extractor import extract_text_from_pdf
+from preprocessing import preprocess_text
+from feature_engineering import extract_tfidf
+from topic_modeling import perform_lda, display_topics
+from summarizer import extractive_summary
+from visualization import generate_wordcloud
 
-# Import our custom modules
-from pdf_extractor import load_dataset
-from preprocessing import preprocess_corpus
-from feature_engineering import extract_tfidf_features, get_top_keywords_per_doc, get_global_top_terms
-from topic_modeling import prepare_gensim_objects, train_lda_model, get_topics, get_doc_topics, compute_coherence_score
-from summarizer import extract_summary
-from visualization import plot_global_keywords, plot_document_keywords
+st.title("AI & ML in Healthcare: Research Analysis System")
 
-# Set UI Configuration
-st.set_page_config(
-    page_title="HealthRes NLP Analysis", 
-    page_icon="🏥",
-    layout="wide"
+uploaded_files = st.file_uploader(
+    "Upload Research Papers (PDF)",
+    type=["pdf"],
+    accept_multiple_files=True
 )
 
-# Custom Styling
-st.markdown("""
-<style>
-    .reportview-container {
-        background: #fdfdfd;
-    }
-    .main {
-        padding: 2rem;
-    }
-    .stMetric {
-        background-color: #ffffff;
-        padding: 1.5rem;
-        border-radius: 0.75rem;
-        border: 1px solid #e2e8f0;
-        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-    }
-    .st-emotion-cache-1kyxreq {
-        justify-content: center;
-    }
-    .summary-box textarea {
-        background-color: #f5f5f5 !important;
-        color: #000000 !important;
-        font-size: 14px !important;
-    }
-    .stat-card {
-        background-color: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 20px 24px;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-        text-align: center;
-    }
-    .stat-card .stat-value {
-        font-size: 2rem;
-        font-weight: 700;
-        color: #1e293b;
-        margin: 0;
-    }
-    .stat-card .stat-label {
-        font-size: 0.85rem;
-        color: #64748b;
-        margin-top: 4px;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-    }
-</style>
-""", unsafe_allow_html=True)
+if uploaded_files:
+    corpus = []
+    raw_texts = []
+    
+    for file in uploaded_files:
+        raw_text = extract_text_from_pdf(file)
+        raw_texts.append(raw_text)
+        processed = preprocess_text(raw_text)
+        corpus.append(processed)
 
-st.title("🏥 AI & ML in Healthcare: Research Analysis System")
-st.markdown("""
-### Traditional NLP Intelligence Dashboard
-This system provides an analytical lens into healthcare research using **strictly traditional NLP architectures**.
-By avoiding Large Language Models (LLMs), we maintain deterministic reproducibility and focus on structural linguistic features (TF-IDF, LDA, and Coherence metrics).
-""")
+    X, vectorizer = extract_tfidf(corpus)
+    lda_model = perform_lda(X, num_topics=5)
 
-# Sidebar: Configuration
-st.sidebar.header("🛠️ Pipeline Settings")
-RAW_DATA_PATH = "data/raw"
+    topics = display_topics(
+        lda_model,
+        vectorizer.get_feature_names_out()
+    )
 
-# Option to load existing dataset
-if st.sidebar.button("🚀 Load Research Corpus"):
-    if os.path.exists(RAW_DATA_PATH):
-        with st.spinner("⏳ Ingesting and assembling PDFs..."):
-            documents, corpus = load_dataset(RAW_DATA_PATH)
-            st.session_state['documents'] = documents
-            st.session_state['corpus'] = corpus
-            st.sidebar.success(f"✓ Loaded {len(documents)} papers.")
-    else:
-        st.sidebar.error(f"Error: {RAW_DATA_PATH} not found.")
+    st.subheader("📌 Identified Topics")
+    for topic_id, words in topics:
+        st.write(f"Topic {topic_id}: {', '.join(words)}")
 
-# Main Analysis Workflow
-if 'documents' in st.session_state:
-    docs = st.session_state['documents']
-    
-    # 1. Overview metrics
-    st.subheader("📊 Corpus Overview")
-    total_tokens = sum(len(d.split()) for d in docs)
-    avg_length = total_tokens // len(docs) if docs else 0
-    m1, m2, m3 = st.columns(3)
-    with m1:
-        st.markdown(
-            f'<div class="stat-card"><p class="stat-value">{len(docs)}</p>'
-            f'<p class="stat-label">Papers Ingested</p></div>',
-            unsafe_allow_html=True
-        )
-    with m2:
-        st.markdown(
-            f'<div class="stat-card"><p class="stat-value">{total_tokens:,}</p>'
-            f'<p class="stat-label">Total Tokens</p></div>',
-            unsafe_allow_html=True
-        )
-    with m3:
-        st.markdown(
-            f'<div class="stat-card"><p class="stat-value">~{avg_length:,}</p>'
-            f'<p class="stat-label">Avg. Tokens / Paper</p></div>',
-            unsafe_allow_html=True
-        )
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    # --- Preprocessing and Feature Extraction ---
-    with st.spinner("🔄 Running spaCy/NLTK Preprocessing Pipeline..."):
-        processed_docs = preprocess_corpus(docs)
-    
-    with st.spinner("🛰️ Extracting TF-IDF Features..."):
-        vectorizer, tfidf_matrix = extract_tfidf_features(processed_docs)
-        global_terms = get_global_top_terms(vectorizer, tfidf_matrix, top_n=15)
-        keywords_per_doc = get_top_keywords_per_doc(vectorizer, tfidf_matrix, top_n=5)
+    st.subheader("📊 WordCloud (All Papers)")
+    all_text = " ".join(corpus)
+    fig = generate_wordcloud(all_text)
+    st.pyplot(fig)
 
-    # --- Section: Global Keywords ---
-    st.divider()
-    st.header("🔑 Global Keyword Landscape")
-    st.info("💡 **Traditional NLP Checkpoint:** Global scores are calculated by summing TF-IDF weights across the entire corpus.")
-    
-    plot_global_keywords(global_terms)
-
-    # --- Section: Topic Modeling ---
-    st.divider()
-    st.header("Latent Topic Analysis (LDA)")
-    st.markdown("Discovering hidden semantic structures using unsupervised probabilistic modeling.")
-    
-    num_topics = st.select_slider("Select Number of Latent Topics (K)", options=range(2, 11), value=5)
-    
-    with st.spinner("🪄 Training Generative LDA Model (Traditional)..."):
-        dictionary, gensim_corpus = prepare_gensim_objects(processed_docs)
-        lda_model = train_lda_model(gensim_corpus, dictionary, num_topics=num_topics)
-        topics = get_topics(lda_model, num_words=10)
-        coherence = compute_coherence_score(lda_model, processed_docs, dictionary)
-    
-    st.success(f"🎓 **Topic Coherence (C_V): {coherence:.3f}** (Optimized for traditional NLP architecture)")
-    
-    t_cols = st.columns(min(3, num_topics))
-    for i, (tid, words) in enumerate(topics):
-        with t_cols[i % 3]:
-            st.markdown(f"**Topic {tid}:**")
-            # Word scale for visual weight
-            word_list = ", ".join([w[0] for w in words[:6]])
-            st.caption(word_list)
-
-    # --- Section: Individual Summaries ---
-    st.divider()
-    st.header("Extractive Research Summary")
-    st.markdown("Identifying and ranking high-information sentences using sentence-level TF-IDF weights. No text generation is performed.")
-    
-    doc_idx = st.selectbox("Select a Research Paper to Analyze", range(len(docs)), format_func=lambda x: f"Document {x+1} - {len(docs[x].split())} words")
-    
-    col_sum_1, col_sum_2 = st.columns([2, 1])
-    
-    with col_sum_1:
-        st.subheader("Extractive Summary")
-        summary_text = extract_summary(docs[doc_idx], top_n=5)
-        st.markdown(
-            f"""
-            <div style="
-                background-color: #ffffff;
-                color: #000000;
-                padding: 20px;
-                border-radius: 10px;
-                border-left: 5px solid #3b82f6;
-                font-size: 14px;
-                line-height: 1.7;
-                text-align: justify;
-                max-height: 400px;
-                overflow-y: auto;
-            ">
-            {summary_text}
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-        
-    with col_sum_2:
-        st.subheader("Key Tokens")
-        st.write(", ".join(keywords_per_doc[doc_idx]))
-        
-        # Add a mini bar chart for this specific doc's keywords if possible
-        doc_tfidf = tfidf_matrix.getrow(doc_idx).toarray().flatten()
-        feat_names = vectorizer.get_feature_names_out()
-        plot_document_keywords(doc_tfidf, feat_names)
-
-else:
-    st.info("👈 **Getting Started:** Click the sidebar button to ingest the research papers from the 'data/raw' directory.")
-    st.image("https://plus.unsplash.com/premium_photo-1673953509975-576678fa6710?q=80&w=2070&auto=format&fit=crop", caption="Unlocking Healthcare Insights via NLP")
-
-# Footer
-st.markdown("---")
-st.caption("Built using Traditional NLP · NLTK · spaCy · TF-IDF (scikit-learn) · LDA + Coherence (Gensim) · No LLMs used")
+    st.subheader("📄 Extractive Summary (First Paper)")
+    summary = extractive_summary(raw_texts[0])
+    st.write(summary)
