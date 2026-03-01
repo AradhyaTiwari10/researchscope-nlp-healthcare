@@ -5,6 +5,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from preprocessing import clean_text
 
 nltk.download("punkt", quiet=True)
+nltk.download("punkt_tab", quiet=True)
 
 def get_abstract_only(text):
     # Start at Abstract if present, handling cases where it's glued to numbers like 124359Abstract:
