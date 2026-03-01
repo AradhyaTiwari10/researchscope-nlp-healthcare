@@ -43,13 +43,15 @@ def get_top_keywords_per_doc(vectorizer, tfidf_matrix, top_n=20):
 
 def get_global_top_terms(vectorizer, tfidf_matrix, top_n=20):
     """
-    Calculates global top terms based on mean TF-IDF score across the corpus.
+    Calculates global top terms based on the sum of TF-IDF scores across the corpus.
+    This identifies the most significant terms globally within the dataset.
     """
     feature_names = vectorizer.get_feature_names_out()
-    mean_tfidf = tfidf_matrix.mean(axis=0).A1
-    top_indices = mean_tfidf.argsort()[::-1][:top_n]
+    # Flatten the summed sparse matrix results using .A1 for compatibility with argsort
+    tfidf_sums = tfidf_matrix.sum(axis=0).A1
+    top_indices = tfidf_sums.argsort()[::-1][:top_n]
     
-    return [(feature_names[i], mean_tfidf[i]) for i in top_indices]
+    return [(feature_names[i], tfidf_sums[i]) for i in top_indices]
 
 if __name__ == "__main__":
     # Sample verification
