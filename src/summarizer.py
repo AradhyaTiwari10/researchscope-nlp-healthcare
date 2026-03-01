@@ -2,7 +2,7 @@ import nltk
 import re
 from nltk.tokenize import sent_tokenize
 from sklearn.feature_extraction.text import TfidfVectorizer
-from preprocessing import clean_text
+from src.preprocessing import clean_text
 
 nltk.download("punkt", quiet=True)
 nltk.download("punkt_tab", quiet=True)

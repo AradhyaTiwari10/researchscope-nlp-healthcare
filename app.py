@@ -1,10 +1,10 @@
 import streamlit as st
-from pdf_extractor import extract_text_from_pdf
-from preprocessing import preprocess_text
-from feature_engineering import extract_tfidf
-from topic_modeling import perform_lda, display_topics
-from summarizer import extractive_summary
-from visualization import generate_wordcloud
+from src.pdf_extractor import extract_text_from_pdf
+from src.preprocessing import preprocess_text
+from src.feature_engineering import extract_tfidf
+from src.topic_modeling import perform_lda, display_topics
+from src.summarizer import extractive_summary
+from src.visualization import generate_wordcloud
 
 st.title("AI & ML in Healthcare: Research Analysis System")
 
