@@ -1,19 +1,19 @@
-# Project 5: Customer Churn Prediction & Agentic Retention Strategy
+# Project: NLP Research Analysis System & Agentic Healthcare Strategist
 
-## From Predictive Analytics to Intelligent Intervention
+## From Classical Text Mining to Intelligent Assistants
 
 ### Project Overview
-This project involves the design and implementation of an **AI-driven customer analytics system** that predicts customer churn and evolves into an agentic AI retention strategist. Currently, the project is structured at **Milestone 1**, focusing strictly on classical NLP and Machine Learning techniques.
+This project involves the design and implementation of an **AI-driven NLP analytics system** that ingests, summarizes, and discovers latent topics across Healthcare AI research papers, and evolves into an intelligent research assistant.
 
-- **Milestone 1 (Current):** Classical NLP pipeline (TF-IDF, LDA) applied to a dataset of Healthcare AI research papers to extract foundational topics and generate extractive summaries.
-- **Milestone 2 (Future):** Extension into an agent-based AI application that autonomously reasons about risk, retrieves retention best practices (RAG), and plans intervention strategies.
+- **Milestone 1:** Classical Natural Language Processing (NLP) and Machine Learning techniques (TF-IDF, Latent Dirichlet Allocation) applied to PDF research documents to extract clean summaries and identify key thematic drivers.
+- **Milestone 2:** Extension into an agent-based AI application that autonomously reasons about the research topics, retrieves information using RAG (Retrieval-Augmented Generation), and interacts comprehensively with the document corpus.
 
 ---
 
 ### Constraints & Requirements
 - **Team Size:** 3–4 Students
 - **API Budget:** Free Tier Only (Open-source models / Free APIs)
-- **Framework:** Streamlit (UI), Scikit-Learn (ML), NLTK/spaCy (NLP)
+- **Framework:** LangGraph (Recommended for M2), Streamlit (UI)
 - **Hosting:** Mandatory (Hugging Face Spaces, Streamlit Cloud, or Render)
 
 ---
@@ -22,52 +22,31 @@ This project involves the design and implementation of an **AI-driven customer a
 | Component | Technology |
 | :--- | :--- |
 | **Data Ingestion** | PyPDF2 |
-| **NLP Preprocessing** | NLTK, spaCy, RegEx |
-| **ML Models (M1)** | TF-IDF Vectorizer, Latent Dirichlet Allocation (scikit-learn) |
+| **ML Models & NLP (M1)** | Scikit-Learn (TF-IDF, LDA), NLTK, spaCy |
+| **Agent Framework (M2)** | LangGraph, Chroma/FAISS (RAG) |
 | **UI Framework** | Streamlit |
-| **Deployment** | Upcoming (M2) |
-
----
-
-### 📁 Project Structure
-
-```
-researchscope-nlp-healthcare/
-│
-├── data/
-│   └── (User must drop 10 PDF research papers here to upload via UI)
-├── app.py                     # Streamlit Main UI Application
-├── feature_engineering.py     # TF-IDF Feature Extraction logic
-├── pdf_extractor.py           # Heuristic Abstract/Intro PDF parser
-├── preprocessing.py           # NLP cleaning, Tokenization, Lemmatization, Stopwords
-├── summarizer.py              # TF-IDF sentence scoring for Extractive Summaries
-├── topic_modeling.py          # LDA Topic Modeling implementation
-├── visualization.py           # WordCloud rendering pipeline
-├── requirements.txt           # Python dependencies
-└── README.md                  # Project documentation (You are here)
-```
+| **LLMs (M2)** | Open-source models or Free-tier APIs |
 
 ---
 
 ### Milestones & Deliverables
 
-#### Milestone 1: Classical NLP Topic Modeling (Mid-Sem - Achieved)
-**Objective:** Identify key topics and summarize healthcare AI research using purely classical NLP pipelines *without LLMs*.
+#### Milestone 1: Classical NLP Topic Modeling (Mid-Sem)
+**Objective:** Identify underlying research topics and generate extractive summaries using classical NLP pipelines *without LLMs*.
 
 **Key Deliverables:**
 - Problem understanding & Business context.
-- System architecture diagram (in code comments & logic flow).
+- System architecture diagram (Code structure logic).
 - Working local application with UI (Streamlit).
-- **Extractive Summarization:** 3-sentence scoring based on TF-IDF.
-- **Topic Modeling:** 4 extracted latent topics representing document corpura.
+- Model performance evaluation report (Cohesive and distinct topics, 3-sentence summary extraction rules).
 
-#### Milestone 2: Agentic AI Assistant (End-Sem - Upcoming)
-**Objective:** Extend the system into an agentic strategist that reasons via LangGraph/RAG.
+#### Milestone 2: Agentic AI Research Assistant (End-Sem)
+**Objective:** Extend the system into an agentic strategist that reasons about the research topics, retrieves best practices/document contexts (RAG), and generates structured insights.
 
 **Key Deliverables:**
 - **Publicly deployed application** (Link required).
 - Agent workflow documentation (States & Nodes).
-- Structured retention report generation.
+- Structured research insight report generation.
 - GitHub Repository & Complete Codebase.
 - Demo Video (Max 5 mins).
 
@@ -81,4 +60,4 @@ researchscope-nlp-healthcare/
 | **End-Sem** | 30% | Reasoning quality, RAG & State management implementation, Output clarity, Deployment success. |
 
 > [!WARNING]
-> Localhost-only demonstrations will **not** be accepted for final submission. Milestone 2 project must be hosted.
+> Localhost-only demonstrations will **not** be accepted for final submission. Project must be hosted.
