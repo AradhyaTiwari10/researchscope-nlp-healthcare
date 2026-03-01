@@ -47,11 +47,16 @@ def remove_references_section(text):
 def fix_hyphenation(text):
     """
     Rejoins words broken by PDF line-wrap hyphenation.
-    e.g. 'Net-\ntive' → 'Nettive', 'algo-\nrithm' → 'algorithm'.
-    Must run before newline normalization.
+    Handles both:
+    Net-\ntive
+    Net- tive
     """
-    # Case 1: hyphen immediately followed by newline (with optional spaces)
+    # Case 1: hyphen + newline
     text = re.sub(r"-\s*\n\s*", "", text)
+
+    # Case 2: hyphen + space + lowercase continuation
+    text = re.sub(r"-\s+(?=[a-z])", "", text)
+
     return text
 
 def normalize_newlines(text):
@@ -112,6 +117,10 @@ def clean_for_summary(text):
     # 5. Remove URLs
     text = re.sub(r"http\S+|www\.\S+", "", text)
 
+    # 6. Remove PDF filename artifacts and percent-encoded junk
+    text = re.sub(r"\S+\.pdf\S*", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"%\w+", "", text)
+
     # 4. Remove DOI identifiers (case-insensitive)
     text = re.sub(r"doi:\s*\S+", "", text, flags=re.IGNORECASE)
     text = re.sub(r"10\.\d{4,}/\S+", "", text)  # Raw DOI format
@@ -142,6 +151,10 @@ def _is_valid_sentence(s):
     s_stripped = s.strip()
     s_lower = s_stripped.lower()
     words = s_stripped.split()
+
+    # Reject all-caps section headers (e.g., "INTRODUCTION")
+    if s_stripped.isupper():
+        return False
 
     # Length filter — must have at least 8 words
     if len(words) < 8:
