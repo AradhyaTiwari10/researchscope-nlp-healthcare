@@ -1,0 +1,11 @@
+pdfplumber
+nltk
+spacy
+scikit-learn
+gensim
+pandas
+numpy
+matplotlib
+seaborn
+streamlit
+ipykernel
