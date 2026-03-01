@@ -26,7 +26,7 @@ with st.sidebar:
     
     # Preloaded Data Button in Sidebar
     st.header("Demo Mode")
-    if st.button("🚀 Load Preloaded Research Papers"):
+    if st.button("Load Preloaded Research Papers"):
         demo_dir = "data/raw"
         demo_files = [f for f in os.listdir(demo_dir) if f.endswith(".pdf")]
         
