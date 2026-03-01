@@ -67,10 +67,8 @@ def normalize_newlines(text):
 
 def remove_fragmented_lines(text):
     """
-    Removes short, noise-heavy lines that originate from:
-    – Table rows / column headers
-    – Figure label lines
-    – Excessive numeric reference rows
+    Removes only clearly noisy lines (table rows, figure stubs, reference IDs).
+    Uses a digit RATIO check so that real sentences with inline numbers are kept.
     """
     lines = text.split("\n")
     cleaned = []
@@ -78,12 +76,14 @@ def remove_fragmented_lines(text):
     for line in lines:
         stripped = line.strip()
 
-        # Drop lines that are too short to be a narrative sentence
-        if len(stripped) < 20:
+        # Drop truly empty or extremely short stubs (e.g. section labels, "Fig. 1")
+        if len(stripped) < 10:
             continue
 
-        # Drop lines that are dominated by digits (table cells, reference IDs)
-        if len(re.findall(r"\d", stripped)) > 5:
+        # Drop lines where more than 40% of characters are digits
+        # (table cells, pure reference rows) — but keep normal scientific sentences
+        digit_count = len(re.findall(r"\d", stripped))
+        if len(stripped) > 0 and digit_count / len(stripped) > 0.40:
             continue
 
         cleaned.append(stripped)
@@ -100,10 +100,16 @@ def clean_for_summary(text):
     # 1. Remove article history blocks
     text = re.sub(r"ARTICLE HISTORY.*", "", text, flags=re.IGNORECASE)
 
-    # 2. Remove emails
+    # 2. Remove pdfplumber CID font encoding artifacts: (cid:27), (cid:123) etc.
+    text = re.sub(r"\(cid:\d+\)", "", text)
+
+    # 3. Remove copyright / trademark lines
+    text = re.sub(r"©.*?(rights reserved|publishers?|university|college|society)[^\n]*", "", text, flags=re.IGNORECASE)
+
+    # 4. Remove emails
     text = re.sub(r"\S+@\S+", "", text)
 
-    # 3. Remove URLs
+    # 5. Remove URLs
     text = re.sub(r"http\S+|www\.\S+", "", text)
 
     # 4. Remove DOI identifiers (case-insensitive)
@@ -119,8 +125,8 @@ def clean_for_summary(text):
     # 7. Remove (Author et al., YYYY) style citations
     text = re.sub(r"\(\w[\w\s]+et al\.,?\s*\d{4}\)", "", text)
 
-    # 8. Remove 4-digit year clusters (reference lists)
-    text = re.sub(r"\b(19|20)\d{2}\b", "", text)
+    # NOTE: We intentionally do NOT strip standalone years (e.g. 2023).
+    # Year stripping was found to destroy large portions of valid scientific prose.
 
     # 9. Normalize whitespace
     text = re.sub(r"[ \t]+", " ", text)
