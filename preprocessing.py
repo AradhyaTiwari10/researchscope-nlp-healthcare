@@ -1,15 +1,15 @@
 import nltk
-import spacy
 import string
 import re
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
+from nltk.stem import WordNetLemmatizer
 
-nltk.download("punkt")
-nltk.download("stopwords")
+nltk.download("punkt", quiet=True)
+nltk.download("stopwords", quiet=True)
+nltk.download("wordnet", quiet=True)
 
-nlp = spacy.load("en_core_web_sm")
-
+lemmatizer = WordNetLemmatizer()
 custom_stopwords = {
     "figure", "table", "et", "al", "pmid", "crossref",
     "doi", "http", "www", "com",
@@ -68,14 +68,12 @@ def preprocess_text(text):
     tokens = word_tokenize(text.lower())
 
     tokens = [
-        word for word in tokens
+        lemmatizer.lemmatize(word)
+        for word in tokens
         if word not in stop_words
         and word not in string.punctuation
         and word.isalpha()
         and len(word) > 3
     ]
 
-    doc = nlp(" ".join(tokens))
-    lemmatized = [token.lemma_ for token in doc]
-
-    return " ".join(lemmatized)
+    return " ".join(tokens)
