@@ -59,5 +59,3 @@ This project involves the design and implementation of an **AI-driven NLP analyt
 | **Mid-Sem** | 25% | ML technique application, Feature Engineering, UI Usability, Evaluation Metrics. |
 | **End-Sem** | 30% | Reasoning quality, RAG & State management implementation, Output clarity, Deployment success. |
 
-> [!WARNING]
-> Localhost-only demonstrations will **not** be accepted for final submission. Project must be hosted.
