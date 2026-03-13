@@ -1,0 +1,240 @@
+\documentclass[12pt]{article}
+
+\usepackage[a4paper, margin=1in]{geometry}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{float}
+
+\title{\textbf{AI \& ML in Healthcare: NLP Research Analysis System}}
+\author{Sahil Chand \and Aradhya Tiwari \and Aaryan Krishna \and Vivek Kumar Raj}
+\date{}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+% ------------------------------------------------
+\section{Introduction \& Problem Statement}
+
+The healthcare research ecosystem has witnessed exponential growth in publications related to Artificial Intelligence (AI) and Machine Learning (ML). Researchers are increasingly overwhelmed by the volume of PDF-based academic papers spanning genomics, clinical decision systems, medical imaging, and predictive healthcare analytics.
+
+Manual analysis of such documents is:
+\begin{itemize}
+    \item Time-consuming
+    \item Difficult to scale
+    \item Prone to human bias
+\end{itemize}
+
+This project proposes a \textbf{Classical NLP-based Research Analysis System} that:
+\begin{enumerate}
+    \item Extracts structured information from unstructured PDF documents
+    \item Removes scientific metadata noise
+    \item Discovers hidden research themes using probabilistic topic modeling
+    \item Measures document similarity
+    \item Generates concise extractive summaries
+\end{enumerate}
+
+The system is intentionally built without Large Language Models (LLMs) to ensure interpretability and mathematical transparency.
+
+% ------------------------------------------------
+\section{Data Description}
+
+\subsection{Dataset Source}
+
+A curated corpus of 10 peer-reviewed research papers focusing on:
+\begin{itemize}
+    \item AI in Genomics
+    \item Clinical Risk Prediction
+    \item Machine Learning in Radiology
+    \item Sensor-based Diagnostic Systems
+\end{itemize}
+
+All documents were provided in PDF format.
+
+\subsection{Dataset Characteristics}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{ll}
+\toprule
+\textbf{Property} & \textbf{Description} \\
+\midrule
+Format & Multi-column PDF \\
+Noise & DOIs, URLs, Emails, Citations \\
+Text Artifacts & Hyphenation breaks, OCR artifacts \\
+Sections Used & Abstract and Introduction \\
+\bottomrule
+\end{tabular}
+\caption{Dataset Characteristics}
+\end{table}
+
+% ------------------------------------------------
+\section{System Architecture}
+
+The system follows a modular NLP pipeline:
+
+\begin{verbatim}
+PDF Upload
+   ↓
+Text Extraction (PyPDF2)
+   ↓
+Regex Cleaning
+   ↓
+Tokenization & Lemmatization (NLTK)
+   ↓
+TF-IDF Vectorization
+   ↓
+LDA Topic Modeling
+   ↓
+Cosine Similarity Matrix
+   ↓
+Extractive Summarization
+   ↓
+Streamlit UI
+\end{verbatim}
+
+% ------------------------------------------------
+\section{Methodology}
+
+\subsection{Text Preprocessing}
+
+The preprocessing pipeline consists of:
+\begin{itemize}
+    \item Lowercasing
+    \item Removal of URLs, DOIs, citation indices
+    \item Stopword filtering
+    \item Lemmatization using WordNet
+    \item Removal of short tokens ($<$ 3 characters)
+\end{itemize}
+
+% ------------------------------------------------
+\subsection{Feature Engineering: TF-IDF}
+
+We transform text into numerical vectors using Term Frequency–Inverse Document Frequency:
+
+\begin{equation}
+TFIDF(t, d) = TF(t, d) \times \log\left(\frac{N}{DF(t)}\right)
+\end{equation}
+
+Where:
+\begin{itemize}
+    \item $TF(t, d)$ = frequency of term $t$ in document $d$
+    \item $DF(t)$ = number of documents containing term $t$
+    \item $N$ = total number of documents
+\end{itemize}
+
+Configuration:
+\begin{itemize}
+    \item min\_df = 2
+    \item max\_df = 0.85
+    \item ngram\_range = (1,2)
+\end{itemize}
+
+% ------------------------------------------------
+\subsection{Topic Modeling: Latent Dirichlet Allocation}
+
+LDA assumes each document is a mixture of topics and each topic is a distribution over words.
+
+\begin{equation}
+P(w|d) = \sum_{k=1}^{K} P(w|z_k) \cdot P(z_k|d)
+\end{equation}
+
+Where:
+\begin{itemize}
+    \item $z_k$ represents topic $k$
+    \item $P(w|z_k)$ is the word distribution per topic
+    \item $P(z_k|d)$ is the topic distribution per document
+\end{itemize}
+
+We selected $K = 4$ topics for optimal interpretability.
+
+% ------------------------------------------------
+\subsection{Cosine Similarity}
+
+To measure document similarity:
+
+\begin{equation}
+\cos(\theta) = \frac{A \cdot B}{||A|| \cdot ||B||}
+\end{equation}
+
+Values range from 0 (completely different) to 1 (identical).
+
+% ------------------------------------------------
+\subsection{Extractive Summarization}
+
+The summarization process:
+\begin{enumerate}
+    \item Extracts the Abstract section
+    \item Tokenizes sentences
+    \item Ranks sentences using TF-IDF weights
+    \item Selects top 3 highest scoring sentences
+    \item Reorders them chronologically
+\end{enumerate}
+
+This ensures logical coherence without hallucination.
+
+% ------------------------------------------------
+\section{Evaluation \& Results}
+
+\subsection{Identified Topics}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{ll}
+\toprule
+\textbf{Topic} & \textbf{Identified Theme} \\
+\midrule
+Topic 1 & Genomics \& Gene Analysis \\
+Topic 2 & Clinical Risk Prediction \\
+Topic 3 & Algorithm Development \& Ethics \\
+Topic 4 & Sensor-based Diagnostics \\
+\bottomrule
+\end{tabular}
+\caption{LDA Identified Topics}
+\end{table}
+
+The topics displayed strong semantic cohesion across documents.
+
+% ------------------------------------------------
+\section{Optimization Steps}
+
+\begin{itemize}
+    \item Replaced spaCy with NLTK to reduce memory footprint
+    \item Added regex-based hyphen repair
+    \item Expanded domain stopword list
+    \item Pinned dependency versions for cloud stability
+\end{itemize}
+
+% ------------------------------------------------
+\section{Limitations}
+
+\begin{itemize}
+    \item Bag-of-words assumption ignores word order
+    \item No semantic embeddings
+    \item Limited cross-document reasoning
+    \item No real-time web retrieval
+\end{itemize}
+
+% ------------------------------------------------
+\section{Conclusion}
+
+This project demonstrates how classical NLP techniques can structure and analyze healthcare research documents. By combining TF-IDF, LDA, cosine similarity, and extractive summarization, we transformed unstructured PDFs into interpretable thematic insights.
+
+The system fulfills all Milestone 1 objectives while maintaining transparency and computational efficiency.
+
+% ------------------------------------------------
+\section*{References}
+
+\begin{enumerate}
+    \item Blei, D., Ng, A., \& Jordan, M. (2003). Latent Dirichlet Allocation. Journal of Machine Learning Research.
+    \item Manning, C., Raghavan, P., \& Schütze, H. (2008). Introduction to Information Retrieval.
+    \item Pedregosa et al. (2011). Scikit-learn: Machine Learning in Python.
+    \item Bird, S., Klein, E., \& Loper, E. (2009). Natural Language Processing with Python.
+    \item Salton, G., \& McGill, M. (1983). Introduction to Modern Information Retrieval.
+\end{enumerate}
+
+\end{document}
