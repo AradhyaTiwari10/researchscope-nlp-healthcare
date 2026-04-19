@@ -213,3 +213,9 @@ Deploying the shared TF-IDF matrix explicitly (rather than per-document instanti
   ]
 }
 ```
+
+### Improvements & Optimizations
+- Ensured consistency between TF-IDF vocabulary and summarization input
+- Fixed vectorizer fallback to properly fit on processed texts
+- Added filtering for low-content articles
+- Improved summary quality through consistent preprocessing pipeline

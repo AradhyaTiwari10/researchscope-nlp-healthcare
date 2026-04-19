@@ -8,7 +8,7 @@ Responsibilities:
   - Extractive summarization using TF-IDF ranking
 
 Public API:
-  summarize(text: str, vectorizer: TfidfVectorizer, num_sentences: int = 3) -> str
+  summarize(text: str, vectorizer: TfidfVectorizer, top_n: int = 3) -> str
 """
 
 import nltk
@@ -37,7 +37,7 @@ def _get_abstract_only(text: str) -> str:
         
     return text.strip()
 
-def summarize(text: str, vectorizer: Any, num_sentences: int = 3) -> str:
+def summarize(text: str, vectorizer: Any, top_n: int = 3) -> str:
     """
     Generate an extractive summary of the text by scoring sentences with a TF-IDF vectorizer.
     
@@ -46,7 +46,7 @@ def summarize(text: str, vectorizer: Any, num_sentences: int = 3) -> str:
         vectorizer (Any): An initialized feature vectorizer instance (e.g. TfidfVectorizer).
                           A new instance can be provided, but it will be fit specifically 
                           to the sentences of this document.
-        num_sentences (int): Number of sentences to include in the compiled summary.
+        top_n (int): Number of sentences to include in the compiled summary.
         
     Returns:
         str: A concatenated string of the highest-scoring sentences, preserving their original order.
@@ -62,7 +62,7 @@ def summarize(text: str, vectorizer: Any, num_sentences: int = 3) -> str:
     
     # 3. Tokenize sentences
     sentences = sent_tokenize(clean_abstract)
-    if len(sentences) <= num_sentences:
+    if len(sentences) <= top_n:
         return " ".join(sentences)
         
     # 4. Feature Extraction
@@ -72,7 +72,7 @@ def summarize(text: str, vectorizer: Any, num_sentences: int = 3) -> str:
         X = vectorizer.fit_transform(sentences)
     except ValueError:
         # Happens if vocab is empty or sentences are too short
-        return " ".join(sentences[:num_sentences])
+        return " ".join(sentences[:top_n])
     
     # 5. Score Sentences
     sentence_scores = X.sum(axis=1) # Sum of TF-IDF scores across words in the sentence
@@ -84,7 +84,7 @@ def summarize(text: str, vectorizer: Any, num_sentences: int = 3) -> str:
     )
     
     # 7. Reconstruct Summary (maintaining original order)
-    top_indices = sorted([idx for score, idx in ranked[:num_sentences]])
+    top_indices = sorted([idx for score, idx in ranked[:top_n]])
     summary = " ".join([sentences[idx] for idx in top_indices])
     
     return summary
