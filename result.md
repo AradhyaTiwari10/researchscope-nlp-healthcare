@@ -182,3 +182,34 @@ This phase officially transitions the pipeline from a sterile input state to a R
 - Added filtering to skip low-content articles
 - Cleaned extracted text to remove excessive whitespace
 - Limited extraction to top 3–5 valid articles for efficiency
+
+---
+
+## Phase 4: NLP Processing Integration
+
+### Implementation Details
+
+* Applied the pre-built Classical NLP pipeline to extract meaningful substance dynamically.
+* Iterated processed text lists via `nlp_processor` seamlessly wrapping `preprocessing`, `extract_features`, and `summarize` modules together.
+* Mapped resultant summaries back to their respective origin `<url>` pointers securely ensuring data pipeline traceability.
+* Updated `run_query.py` to complete NLP processing and store payloads dynamically under `state["summaries"]`.
+
+### Modules Created
+
+* `src/nlp_processor.py` → Central routing module that wires raw string extracts into functional math transformers.
+
+### How Global TF-IDF Improves Results
+Deploying the shared TF-IDF matrix explicitly (rather than per-document instantiations) lets sequence limits and hyperparameter vocab bounds established upstream be uniformly applied to downstream summarization blocks, assuring consistent sentence rankings logic and robust feature mappings.
+
+### Example Summaries Output
+
+```json
+{
+  "summaries": [
+    {
+      "url": "https://example.com/paper",
+      "summary": "AI shows massive potential in clinical diagnostics. The accuracy reached 95% in trials. Early detection heavily correlates with survival rates."
+    }
+  ]
+}
+```

@@ -9,6 +9,7 @@ import json
 from src.agent_state import get_user_query, initialize_state
 from src.web_search import search_web
 from src.content_extractor import extract_multiple
+from src.nlp_processor import process_articles
 
 def main():
     # 1. Get user query
@@ -33,7 +34,14 @@ def main():
     
     print(f"\n=> Successfully extracted {len(extracted_data)} articles.")
     
-    # 5. Output expectation match
+    # 5. NLP Processing
+    print("\n🧠 Running NLP Processing...")
+    summarized_data = process_articles(state["texts"])
+    state["summaries"] = summarized_data
+    
+    print(f"\n=> Generated {len(summarized_data)} summaries.")
+    
+    # 6. Output expectation match
     print("\nOutput:")
     # We clip the actual text payload for standard output console scrolling so it doesn't flood the terminal
     state_preview = state.copy()
