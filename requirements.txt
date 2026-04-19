@@ -14,3 +14,4 @@ lxml_html_clean
 groq
 python-dotenv
 langgraph
+flake8

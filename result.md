@@ -395,3 +395,9 @@ Observe the logs to see `[Node: Search]` filtering for domains like `.nih.gov`, 
 - Streamlit UI acts as the unified frontend bridging user query to agent execution.
 - Added visual staggered status indicators for loading pipelines.
 - **Extension Chosen:** PDF Export. Developed on-the-fly markdown-to-PDF rendering capabilities integrating `fpdf` directly inside the frontend component to let operators easily download health reports securely offline.
+
+## Continuous Integration (CI)
+### ✅ GitHub Actions setup
+- Developed a basic CI/CD pipeline in `.github/workflows/ci.yml`.
+- Workflow is triggered on push and pull requests to the `main` branch.
+- Added `flake8` to `requirements.txt` to integrate Python code quality checks into the pipeline.
