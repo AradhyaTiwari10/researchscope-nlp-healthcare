@@ -1,15 +1,30 @@
+"""
+summarizer.py
+--------------
+Module: Text Summarization
+Phase 0 – ResearchScope NLP Healthcare
+
+Responsibilities:
+  - Extractive summarization using TF-IDF ranking
+
+Public API:
+  summarize(text: str, vectorizer: TfidfVectorizer, num_sentences: int = 3) -> str
+"""
+
 import nltk
 import re
 from nltk.tokenize import sent_tokenize
-from sklearn.feature_extraction.text import TfidfVectorizer
-from src.preprocessing import clean_text
+from typing import Any
 
+# Download required NLTK resources silently
 nltk.download("punkt", quiet=True)
 nltk.download("punkt_tab", quiet=True)
 
-def get_abstract_only(text):
-    # Start at Abstract if present, handling cases where it's glued to numbers like 124359Abstract:
-    # (?<![a-zA-Z]) ensures it is not part of a larger word
+def _get_abstract_only(text: str) -> str:
+    """
+    Extract only the Abstract part of a research paper, if identifiable.
+    """
+    # Start at Abstract if present
     abstract_match = re.search(r'(?i)(?<![a-zA-Z])abstract\s*[:\n]?', text)
     if abstract_match:
         text = text[abstract_match.end():]
@@ -21,34 +36,55 @@ def get_abstract_only(text):
         
     return text.strip()
 
-def extractive_summary(text, num_sentences=3):
-    # 1. Isolate abstract
-    abstract_text = get_abstract_only(text)
-    if not abstract_text:
-        abstract_text = text[:2000] # Fallback to first 2000 chars
-
-    # 2. Remove metadata
-    clean_abstract = clean_text(abstract_text)
+def summarize(text: str, vectorizer: Any, num_sentences: int = 3) -> str:
+    """
+    Generate an extractive summary of the text by scoring sentences with a TF-IDF vectorizer.
     
+    Args:
+        text (str): The raw document text to summarize.
+        vectorizer (Any): An initialized feature vectorizer instance (e.g. TfidfVectorizer).
+                          A new instance can be provided, but it will be fit specifically 
+                          to the sentences of this document.
+        num_sentences (int): Number of sentences to include in the compiled summary.
+        
+    Returns:
+        str: A concatenated string of the highest-scoring sentences, preserving their original order.
+    """
+    # 1. Isolate abstract or first portion for summarization focus
+    abstract_text = _get_abstract_only(text)
+    if not abstract_text:
+        abstract_text = text[:2000] # Fallback to first 2000 characters if structure is unclear
+
+    # 2. Basic cleanup for summarization (not the full linguistic preprocessing, 
+    # to preserve readability of the output summary)
+    from src.preprocessing import _clean_text # Import private cleaner from local module
+    clean_abstract = _clean_text(abstract_text)
+    
+    # 3. Tokenize sentences
     sentences = sent_tokenize(clean_abstract)
     if len(sentences) <= num_sentences:
-        return clean_abstract
+        return \" \".join(sentences)
         
-    vectorizer = TfidfVectorizer()
-    X = vectorizer.fit_transform(sentences)
+    # 4. Feature Extraction
+    # We fit the provided vectorizer specifically on these sentences in order to score them
+    # Note: Using the standalone module approach
+    try:
+        X = vectorizer.fit_transform(sentences)
+    except ValueError:
+        # Happens if vocab is empty or sentences are too short
+        return \" \".join(sentences[:num_sentences])
     
-    sentence_scores = X.sum(axis=1)
+    # 5. Score Sentences
+    sentence_scores = X.sum(axis=1) # Sum of TF-IDF scores across words in the sentence
     
-    # Map sentences back to their original index
+    # 6. Rank Sentences
     ranked = sorted(
-        [(sentence_scores[i, 0], i)
-         for i in range(len(sentences))],
+        [(sentence_scores[i, 0], i) for i in range(len(sentences))],
         reverse=True
     )
     
-    # Get the indices of the top sentences and sort them to maintain original order
+    # 7. Reconstruct Summary (maintaining original order)
     top_indices = sorted([idx for score, idx in ranked[:num_sentences]])
+    summary = \" \".join([sentences[idx] for idx in top_indices])
     
-    # Extract the original sentences using the sorted indices
-    summary = " ".join([sentences[idx] for idx in top_indices])
     return summary
