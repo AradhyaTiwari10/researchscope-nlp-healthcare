@@ -263,3 +263,26 @@ Sources:
 - Reduced dependency on post-processing string replacements
 - Added safeguards for empty or weak LLM responses
 - Optional deduplication of summaries to improve report clarity
+
+---
+
+## Phase 6: LangGraph Agent Workflow
+
+### Implementation Details
+
+* Transitioned entirely from basic procedural Python scripts (`A -> B -> C`) into a formal agentic state machine using `langgraph`.
+* Migrated the unified pipeline configuration (Search -> Extract -> NLP -> Report) firmly into explicit `StateGraph` isolated nodes.
+* Defined sequential edges binding node relationships dynamically.
+* Abstracted the complex multi-module orchestration strictly under a compiled `run_agent(query)` invocation loop.
+* Replaced linear execution (`run_query.py`) completely with a dedicated agent-based workflow payload (`run_agent.py`).
+
+### Modules Created
+
+* `src/agent_graph.py` → Constructs exact nodes, binds edges, enforces exact state formatting, and invokes compiled graphs dynamically.
+* `run_agent.py` → Replaces `run_query.py` entirely, triggering graph traversals inherently based purely on query mapping.
+
+### Why LangGraph is Better Than a Linear Pipeline
+While procedural calls handle straightforward sequences cleanly, a dedicated State Graph manages the `state` dictionary entirely as **Memory** rather than merely swapping static variables recursively. It inherently provides a stable framework for future scaling:
+* **Conditional Routing:** LangGraph enables cycles directly—for example, looping back to the 'search' node safely if the 'extract' node fails to parse any data.
+* **Checkpointing & Fault Tolerance:** LangGraph's architecture enables deep checkpointing capabilities inherently, allowing processes to halt, ask for explicit manual human intervention via `interrupt`, and organically resume previously instantiated state nodes smoothly without redundant generation.
+* **Granular Observability:** Isolating logic natively inside specific 'Nodes' inherently exposes state execution telemetry mapping securely.
