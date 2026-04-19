@@ -13,20 +13,18 @@ Public API:
   generate_report(query: str, summaries: list) -> str
 """
 
-from transformers import pipeline
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 
-generator = None
+tokenizer = None
+model = None
 
 def get_generator():
-    global generator
-    if generator is None:
+    global tokenizer, model
+    if model is None:
         print("  [*] Loading HuggingFace model (Flan-T5-base)...")
-        # Let pipeline auto-infer the task type from the model architecture to prevent deprecated task string errors
-        generator = pipeline(
-            model="google/flan-t5-base",
-            max_new_tokens=400
-        )
-    return generator
+        tokenizer = AutoTokenizer.from_pretrained("google/flan-t5-base")
+        model = AutoModelForSeq2SeqLM.from_pretrained("google/flan-t5-base")
+    return tokenizer, model
 
 def generate_report(query: str, summaries: list) -> str:
     """
@@ -83,10 +81,11 @@ def generate_report(query: str, summaries: list) -> str:
     
     # 3. Generate Text via LLM
     print("  [*] Generating formal structure via LLM...")
-    gen = get_generator()
+    tok, mod = get_generator()
     
-    response = gen(prompt)
-    generated_text = response[0]["generated_text"].strip()
+    inputs = tok(prompt, return_tensors="pt", max_length=1500, truncation=True)
+    outputs = mod.generate(**inputs, max_new_tokens=400)
+    generated_text = tok.decode(outputs[0], skip_special_tokens=True).strip()
     
     if not generated_text or len(generated_text) < 50:
         return "Report generation failed. Insufficient structured output."
