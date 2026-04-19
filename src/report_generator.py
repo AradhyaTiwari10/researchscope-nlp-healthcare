@@ -89,7 +89,8 @@ def generate_report(query: str, summaries: list) -> str:
         f"You are a medical research assistant helping a researcher.\n"
         f"Based on the following research summaries about '{query}', "
         f"write a clear, informative abstract of 3-4 sentences. "
-        f"Use plain language and focus on what was studied and why it matters.\n\n"
+        f"Use plain language and focus on what was studied and why it matters. "
+        f"Avoid overly technical jargon where possible.\n\n"
         f"Research Summaries:\n{combined}"
     )
     print("    [+] Generating Abstract...")
@@ -100,17 +101,21 @@ def generate_report(query: str, summaries: list) -> str:
         f"You are a medical research assistant.\n"
         f"Based on the following research summaries about '{query}', "
         f"extract and list 5-6 key findings as concise bullet points. "
-        f"Each bullet point should be a distinct, clear insight in simple language.\n\n"
+        f"Start DIRECTLY with the first bullet point — do NOT add a header or intro sentence. "
+        f"Each bullet point should be a distinct, clear insight in simple language. "
+        f"Simplify technical terms where possible.\n\n"
         f"Research Summaries:\n{combined}"
     )
     print("    [+] Generating Key Findings...")
     raw_findings = _run_prompt(findings_prompt, max_tokens=350)
-    # Normalize bullet point formatting regardless of model output style
+    # Normalize bullet point formatting and strip any LLM-generated noise headers
     finding_lines = [line.strip() for line in raw_findings.split("\n") if line.strip()]
     findings = "\n".join(
         f"- {line.lstrip('-').lstrip('*').lstrip('•').strip()}"
         for line in finding_lines
         if len(line.strip()) > 5
+           and not line.lower().startswith("here are")
+           and not line.lower().startswith("the following")
     )
 
     # 4. Generate CONCLUSION
@@ -118,7 +123,8 @@ def generate_report(query: str, summaries: list) -> str:
         f"You are a medical research assistant.\n"
         f"Based on the following research summaries about '{query}', "
         f"write a conclusion of 3-4 sentences that explains the real-world importance "
-        f"of these findings and their potential future impact on healthcare.\n\n"
+        f"of these findings and their potential future impact on healthcare. "
+        f"Use accessible language suitable for a general audience.\n\n"
         f"Research Summaries:\n{combined}"
     )
     print("    [+] Generating Conclusion...")
