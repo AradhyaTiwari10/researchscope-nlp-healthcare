@@ -256,3 +256,10 @@ Conclusion: The integration proves it to be a massive supplementary tool.
 Sources:
 * https://example.com/ai-health
 ```
+
+### Improvements & Optimizations
+- Implemented lazy loading for HuggingFace model to improve performance
+- Strengthened prompt format to enforce structured output
+- Reduced dependency on post-processing string replacements
+- Added safeguards for empty or weak LLM responses
+- Optional deduplication of summaries to improve report clarity

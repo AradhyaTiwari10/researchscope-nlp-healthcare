@@ -15,10 +15,18 @@ Public API:
 
 from transformers import pipeline
 
-# We initialize the model globally so it isn't repeatedly loaded during sequential usages.
-print("  [*] Loading HuggingFace model (Flan-T5-base)...")
-# max_new_tokens provides enough sequence room to construct Title, Abstract, etc. properly.
-generator = pipeline("text2text-generation", model="google/flan-t5-base", max_new_tokens=400)
+generator = None
+
+def get_generator():
+    global generator
+    if generator is None:
+        print("  [*] Loading HuggingFace model (Flan-T5-base)...")
+        generator = pipeline(
+            "text2text-generation",
+            model="google/flan-t5-base",
+            max_new_tokens=400
+        )
+    return generator
 
 def generate_report(query: str, summaries: list) -> str:
     """
@@ -39,8 +47,12 @@ def generate_report(query: str, summaries: list) -> str:
     combined_texts = []
     urls = []
     
-    for idx, item in enumerate(summaries):
-        combined_texts.append(f"{idx+1}. {item['summary']}")
+    unique_summaries = list(set([item["summary"] for item in summaries]))
+    
+    for idx, text in enumerate(unique_summaries):
+        combined_texts.append(f"{idx+1}. {text}")
+        
+    for item in summaries:
         if item["url"] not in urls:
             urls.append(item["url"])
             
@@ -56,21 +68,28 @@ def generate_report(query: str, summaries: list) -> str:
     prompt = (
         f"Given the following research summaries about: {query}\n\n"
         f"Summaries:\n{combined_context}\n\n"
-        "Generate a structured report with:\n"
-        "* Title\n"
-        "* Abstract\n"
-        "* Key Findings (bullet points)\n"
-        "* Conclusion\n\n"
+        "Generate the report STRICTLY in this format:\n\n"
+        "Title:\n"
+        "...\n\n"
+        "Abstract:\n"
+        "...\n\n"
+        "Key Findings:\n"
+        "- ...\n"
+        "- ...\n\n"
+        "Conclusion:\n"
+        "...\n\n"
         "Keep it factual and concise based ONLY on the summaries provided."
     )
     
     # 3. Generate Text via LLM
     print("  [*] Generating formal structure via LLM...")
-    response = generator(prompt)
+    gen = get_generator()
+    
+    response = gen(prompt)
     generated_text = response[0]["generated_text"].strip()
     
-    # Format edge cases slightly if T5 bundles it cleanly
-    generated_text = generated_text.replace("* Title", "Title").replace("* Abstract", "\nAbstract")
+    if not generated_text or len(generated_text) < 50:
+        return "Report generation failed. Insufficient structured output."
     
     # 4. Append Authentic Manual Sources
     source_append = "\n\nSources:\n"
