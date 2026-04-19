@@ -13,7 +13,7 @@ Public API:
   search_web(query: str) -> list
 """
 
-from ddgs import DDGS
+from duckduckgo_search import DDGS
 from typing import List, Dict
 
 def search_web(query: str) -> List[Dict[str, str]]:
