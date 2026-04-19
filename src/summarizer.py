@@ -63,7 +63,7 @@ def summarize(text: str, vectorizer: Any, num_sentences: int = 3) -> str:
     # 3. Tokenize sentences
     sentences = sent_tokenize(clean_abstract)
     if len(sentences) <= num_sentences:
-        return \" \".join(sentences)
+        return " ".join(sentences)
         
     # 4. Feature Extraction
     # We fit the provided vectorizer specifically on these sentences in order to score them
@@ -72,7 +72,7 @@ def summarize(text: str, vectorizer: Any, num_sentences: int = 3) -> str:
         X = vectorizer.fit_transform(sentences)
     except ValueError:
         # Happens if vocab is empty or sentences are too short
-        return \" \".join(sentences[:num_sentences])
+        return " ".join(sentences[:num_sentences])
     
     # 5. Score Sentences
     sentence_scores = X.sum(axis=1) # Sum of TF-IDF scores across words in the sentence
@@ -85,6 +85,6 @@ def summarize(text: str, vectorizer: Any, num_sentences: int = 3) -> str:
     
     # 7. Reconstruct Summary (maintaining original order)
     top_indices = sorted([idx for score, idx in ranked[:num_sentences]])
-    summary = \" \".join([sentences[idx] for idx in top_indices])
+    summary = " ".join([sentences[idx] for idx in top_indices])
     
     return summary
