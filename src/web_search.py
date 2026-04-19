@@ -63,6 +63,8 @@ def search_web(query: str) -> List[Dict[str, str]]:
                 raw_results = list(ddgs.text(search_string, max_results=50))
                 if not raw_results:
                     return pool
+                
+                # First pass: try to get a balanced set
                 for res in raw_results:
                     url = res.get("href", "").lower()
                     if url and url not in seen_urls:
@@ -71,11 +73,17 @@ def search_web(query: str) -> List[Dict[str, str]]:
                         is_readable = any(domain in url for domain in READABLE_DOMAINS)
                         
                         if is_trusted:
+                            # Rule: Hard cap on overly technical academic archives (PMC/PubMed)
                             if is_limited:
                                 if limited_count >= 2:
                                     continue
                                 limited_count += 1
                             
+                            # Optimization: If we have 4 results and 0 are readable,
+                            # skip this one if it's NOT readable (unless we're at the very end of raw_results)
+                            if len(pool) == 4 and readable_count == 0 and not is_readable:
+                                continue
+
                             if is_readable:
                                 readable_count += 1
 

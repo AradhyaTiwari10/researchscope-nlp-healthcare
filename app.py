@@ -1,155 +1,102 @@
 import streamlit as st
+import re
 import os
-from src.pdf_extractor import extract_text_from_pdf
-from src.preprocessing import preprocess_text
-from src.feature_engineering import extract_tfidf
-from src.topic_modeling import perform_lda, display_topics
-from src.summarizer import extractive_summary
-from src.visualization import generate_wordcloud, generate_cosine_heatmap
-from sklearn.metrics.pairwise import cosine_similarity
-import numpy as np
+from dotenv import load_dotenv
 
-# Page Configuration
-st.set_page_config(page_title="Healthcare Research AI", layout="wide")
+# Import the LangGraph agent
+from src.agent_graph import run_agent
 
-st.title("AI & ML in Healthcare: Research Analysis System")
+# Auto-load environment variables
+load_dotenv()
 
-# 1. Sidebar explanation
-with st.sidebar:
-    st.header("Project Overview")
-    st.info("""
-    This system uses **Classical NLP** (no LLMs) to analyze healthcare research. 
-    It identifies key topics, evaluates document similarity, and generates summaries.
-    """)
-    st.divider()
-    st.markdown("**Milestone 1:** Topic Modeling & Text Analytics")
-    
-    # Preloaded Data Button in Sidebar
-    st.header("Demo Mode")
-    if st.button("Load Preloaded Research Papers"):
-        demo_dir = "data/raw"
-        demo_files = [f for f in os.listdir(demo_dir) if f.endswith(".pdf")]
-        
-        raw_texts = []
-        file_names = []
-        corpus = []
-        
-        with st.status("Loading 10 Research Papers...", expanded=True) as status:
-            for f in demo_files:
-                path = os.path.join(demo_dir, f)
-                with open(path, "rb") as pdf_file:
-                    text = extract_text_from_pdf(pdf_file)
-                    raw_texts.append(text)
-                    file_names.append(f)
-                    corpus.append(preprocess_text(text))
-            status.update(label="Demo Data Loaded!", state="complete", expanded=False)
-        
-        st.session_state["raw_texts"] = raw_texts
-        st.session_state["file_names"] = file_names
-        st.session_state["corpus"] = corpus
-        st.rerun()
-
-# 2. File Upload
-uploaded_files = st.file_uploader(
-    "Upload Research Papers (PDF)",
-    type=["pdf"],
-    accept_multiple_files=True
+st.set_page_config(
+    page_title="ResearchScope NLP Healthcare", 
+    page_icon="🩺",
+    layout="wide"
 )
 
-if uploaded_files:
-    file_names = [file.name for file in uploaded_files]
-    corpus = []
-    raw_texts = []
+def parse_report(report_text):
+    """Safely parse the sections of the text report."""
+    sections = {}
     
-    with st.status("Preprocessing PDFs...", expanded=True) as status:
-        for file in uploaded_files:
-            raw_text = extract_text_from_pdf(file)
-            raw_texts.append(raw_text)
-            processed = preprocess_text(raw_text)
-            corpus.append(processed)
-        status.update(label="Preprocessing Complete!", state="complete", expanded=False)
-    
-    st.session_state["raw_texts"] = raw_texts
-    st.session_state["file_names"] = file_names
-    st.session_state["corpus"] = corpus
+    # Split using known headers from the formatting prompt
+    try:
+        parts = re.split(r'(Title:|Abstract:|Key Findings:|Conclusion:|Sources:)', report_text)
+        current_header = None
+        for part in parts:
+            part_strip = part.strip()
+            if part_strip in ["Title:", "Abstract:", "Key Findings:", "Conclusion:", "Sources:"]:
+                current_header = part_strip.replace(":", "")
+            elif current_header and part_strip:
+                sections[current_header] = part_strip
+    except Exception:
+        pass
+        
+    return sections
 
-# Check if we have data to display
-if "corpus" in st.session_state and st.session_state["corpus"]:
-    corpus = st.session_state["corpus"]
-    file_names = st.session_state["file_names"]
-    raw_texts = st.session_state["raw_texts"]
+# UI Header Section
+st.title("🩺 ResearchScope NLP Healthcare")
+st.subheader("AI-powered Healthcare Research Assistant")
+st.warning("⚠️ Only healthcare-related queries are supported")
 
-    # A) Feature Engineering (TF-IDF)
-    X, vectorizer = extract_tfidf(corpus)
-    
-    # B) Topic Modeling (LDA)
-    st.header("1. Topic Discovery (LDA)")
-    with st.expander("ℹ️ What is this?"):
-        st.write("""
-        **Latent Dirichlet Allocation (LDA)** is a statistical model that identifies clusters of related words called 'Topics'. 
-        By looking at which words appear together, we can see the primary themes (e.g., Genomics vs Clinical Trials) 
-        without reading every page.
-        """)
+# Input Section
+query = st.text_input("Enter your research query:", placeholder="e.g. latest cancer treatment research")
 
-    lda_model = perform_lda(X, num_topics=4)
-    topics = display_topics(lda_model, vectorizer.get_feature_names_out())
+# Execution Flow
+if st.button("Analyze Research", type="primary"):
     
-    col1, col2 = st.columns(2)
-    with col1:
-        st.write("### Thematic Clusters")
-        for topic_id, words in topics:
-            st.write(f"**Topic {topic_id + 1}**: {', '.join(words)}")
+    # Validation
+    query = query.strip().lstrip(">").strip()
+    if not query:
+        st.warning("Please enter a research query.")
+    else:
+        # Progress Indicators
+        with st.status("Processing query...", expanded=True) as status:
+            st.write("🔍 Searching medical sources...")
+            st.write("📄 Extracting content...")
+            st.write("🧠 Running NLP analysis...")
+            st.write("🤖 Generating report...")
             
-    with col2:
-        st.write("### Document Mapping")
-        topic_dist = lda_model.transform(X)
-        dominant_topic = np.argmax(topic_dist, axis=1)
-        for i, name in enumerate(file_names):
-            st.write(f"**{name}**: Topic {dominant_topic[i] + 1} ({int(topic_dist[i][dominant_topic[i]]*100)}% reliability)")
-
-    st.divider()
-
-    # C) Relationship Mapping (Cosine Similarity)
-    st.header("2. Cross-Document Similarity")
-    with st.expander("ℹ️ What is this?"):
-        st.write("""
-        **Cosine Similarity** measures the 'mathematical distance' between documents in terms of vocabulary. 
-        A score of **1.0 (Dark Blue)** means the papers are almost identical in their research focus, 
-        making it easy to spot redundant reports or related studies.
-        """)
-    sim_matrix = cosine_similarity(X)
-    fig_sim = generate_cosine_heatmap(sim_matrix, file_names)
-    st.pyplot(fig_sim)
-
-    st.divider()
-
-    # D) Visual Word Analysis
-    st.header("3. Keyword Cloud")
-    with st.expander("ℹ️ What is this?"):
-        st.write("""
-        This **WordCloud** highlights the most significant terms across your entire research corpus. 
-        Larger words appeared more frequently in the 'cleaned' dataset, providing a quick visual 
-        Exploratory Data Analysis (EDA).
-        """)
-    all_text = " ".join(corpus)
-    fig_wc = generate_wordcloud(all_text)
-    st.pyplot(fig_wc)
-
-    st.divider()
-
-    # E) Interactive Summary Engine
-    st.header("4. Smart Extractive Summarizer")
-    with st.expander("ℹ️ What is this?"):
-        st.write("""
-        This tool uses **TF-IDF ranking** to find the most 'content-rich' sentences in the Abstract. 
-        It re-sequences them to give you a clean, 3-sentence summary of the research methodology 
-        and findings without the scientific noise.
-        """)
-    
-    selected_doc = st.selectbox("Select a Research Paper to Summarize:", file_names)
-    selected_index = file_names.index(selected_doc)
-    
-    with st.chat_message("assistant"):
-        summary = extractive_summary(raw_texts[selected_index])
-        st.write(f"**Summary of {selected_doc}:**")
-        st.write(summary)
+            try:
+                # 1. Call Backend
+                result = run_agent(query)
+                report = result.get("report", "")
+                
+                # 2. Output Handling
+                if report.startswith("❌") or "Report generation failed" in report or "Insufficient valid text" in report:
+                    status.update(label="Analysis Failed", state="error", expanded=True)
+                    st.error(report)
+                elif "⚠️ LLM request failed" in report:
+                    status.update(label="API Error", state="error", expanded=True)
+                    st.error("LLM Generation failed due to rate limits or API errors. Please retry in a moment.")
+                else:
+                    status.update(label="✅ Analysis Complete", state="complete", expanded=False)
+                    
+                    # 3. Output Display
+                    st.divider()
+                    
+                    parsed_sections = parse_report(report)
+                    
+                    if parsed_sections and "Title" in parsed_sections:
+                        # Display parsed structured sections
+                        st.header(parsed_sections.get("Title", "Research Report"))
+                        
+                        st.subheader("📘 Abstract")
+                        st.markdown(parsed_sections.get("Abstract", "No abstract available."))
+                        
+                        st.subheader("🔬 Key Findings")
+                        st.markdown(parsed_sections.get("Key Findings", "No findings extracted."))
+                        
+                        st.subheader("📊 Conclusion")
+                        st.markdown(parsed_sections.get("Conclusion", "No conclusion drawn."))
+                        
+                        st.subheader("🔗 Sources")
+                        st.markdown(parsed_sections.get("Sources", "No sources provided."))
+                    else:
+                        # Fallback to display raw output if parsing failed
+                        st.write("Report generated, but structured parsing failed. Raw output below:")
+                        st.markdown(report)
+                        
+            except Exception as e:
+                status.update(label="Error processing query", state="error", expanded=True)
+                st.error(f"An unexpected error occurred: {str(e)}")

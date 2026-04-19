@@ -347,3 +347,18 @@ Observe the logs to see `[Node: Search]` filtering for domains like `.nih.gov`, 
 - **Speed**: Groq inference is ~10x faster than local CPU inference.
 
 ---
+
+### 💎 Final Output Refinements
+- **Sanitized Query Input**: Stripped formatting artifacts like `>` and redundant whitespace from terminal inputs to ensure clean report titles.
+- **Noise Elimination**: Implemented post-generation cleaning to remove redundant LLM-generated headers (e.g., "Here are 6 key findings...").
+- **Proactive Simplification**: Added explicit instructions to all LLM prompts to summarize discoveries in plain language and avoid unnecessary technical verbosity.
+- **Source Balancing**: Integrated a diversity enforcer in the search node to guarantee at least one patient-centric source (e.g., Mayo Clinic, Medical News Today) alongside academic papers.
+
+---
+
+## Phase 7: Streamlit UI
+- Built interactive UI for research assistant
+- Integrated LangGraph agent into frontend
+- Added structured report rendering
+- Implemented loading states and error handling
+- Prepared system for deployment
