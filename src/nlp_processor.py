@@ -73,9 +73,13 @@ def process_articles(text_data: List[Dict[str, str]]) -> List[Dict[str, str]]:
             top_n=3
         )
         
-        results.append({
-            "url": url,
-            "summary": article_summary
-        })
-        
+        # Quality Filter: Skip overly technical or short fragments (minimum 20 words)
+        if len(article_summary.split()) >= 20:
+            results.append({
+                "url": url,
+                "summary": article_summary
+            })
+        else:
+            print(f"  [-] Skipping low-quality/short summary for: {url}")
+            
     return results

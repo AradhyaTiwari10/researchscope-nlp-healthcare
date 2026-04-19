@@ -43,16 +43,30 @@ def search_web(query: str) -> List[Dict[str, str]]:
                 "thelancet.com"
             ]
             
+            LIMITED_DOMAINS = [
+                "pubmed.ncbi.nlm.nih.gov",
+                "pmc.ncbi.nlm.nih.gov"
+            ]
+            
             def fetch_and_filter(search_string):
                 pool = []
+                limited_count = 0
                 raw_results = list(ddgs.text(search_string, max_results=50))
                 if not raw_results:
                     return pool
                 for res in raw_results:
-                    url = res.get("href", "")
+                    url = res.get("href", "").lower()
                     if url and url not in seen_urls:
-                        is_trusted = any(domain in url.lower() for domain in TRUSTED_DOMAINS)
+                        is_trusted = any(domain in url for domain in TRUSTED_DOMAINS)
+                        is_limited = any(domain in url for domain in LIMITED_DOMAINS)
+                        
+                        # Logic: Allow trusted. If limited, only allow up to 2.
                         if is_trusted:
+                            if is_limited:
+                                if limited_count >= 2:
+                                    continue
+                                limited_count += 1
+                                
                             seen_urls.add(url)
                             pool.append({
                                 "title": res.get("title", ""),

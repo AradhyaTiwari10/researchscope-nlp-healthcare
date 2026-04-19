@@ -65,23 +65,23 @@ def generate_report(query: str, summaries: list) -> str:
     # 2. Design Prompt
     prompt = f"""You are a medical research assistant.
 
-Using ONLY the provided summaries, generate a structured research report.
+Using the summaries below, generate a clear and structured report.
 
 STRICT FORMAT:
 
 Title:
-<short title>
+<clear topic title>
 
 Abstract:
-<2-3 sentences summary>
+Write 2-3 simple sentences explaining the topic in plain language.
 
 Key Findings:
-- point 1
-- point 2
-- point 3
+- Explain important insights in simple terms
+- Avoid technical jargon
+- Focus on meaning, not raw data
 
 Conclusion:
-<final insights>
+Summarize overall importance and real-world impact
 
 Query: {query}
 
@@ -89,9 +89,9 @@ Summaries:
 {combined_context}
 
 IMPORTANT:
-- Do NOT merge sections
-- Do NOT write as one paragraph
-- Keep bullet points clearly separated
+- Simplify complex medical language
+- Do NOT copy sentences directly
+- Make it readable for a general audience
 """
     
     # 3. Generate Text via LLM

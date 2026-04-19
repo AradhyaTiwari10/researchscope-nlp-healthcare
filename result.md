@@ -285,3 +285,40 @@ While procedural calls handle straightforward sequences cleanly, a dedicated Sta
 * **Conditional Routing:** LangGraph enables cycles directly—for example, looping back to the 'search' node safely if the 'extract' node fails to parse any data.
 * **Checkpointing & Fault Tolerance:** LangGraph's architecture enables deep checkpointing capabilities inherently, allowing processes to halt, ask for explicit manual human intervention via `interrupt`, and organically resume previously instantiated state nodes smoothly without redundant generation.
 * **Granular Observability:** Isolating logic natively inside specific 'Nodes' inherently exposes state execution telemetry mapping securely.
+
+### Phase 8 - Scope Enforcement & Testing
+- Integrated **Medical Scope Guard** using LangGraph conditional routing
+- Implemented a validator to reject non-healthcare/non-medical queries
+- Established a **Test Suite** to verify intent classification and trusted sourcing
+
+---
+
+## 🧪 Testing Guide
+
+To verify the system, run `python3 run_agent.py` and try these test cases:
+
+### 1. Verification of Medical Scope (Accepted)
+Try these queries to see how the agent pulls high-quality medical data:
+- `Clinical trials for lung cancer immunotherapy`
+- `Recent breakthroughs in cardiology and heart failure 2024`
+- `WHO reports on infectious disease prevention`
+
+### 2. Verification of Scope Guard (Rejected)
+Try these queries to see how the system protects its medical specialization:
+- `Who won the FIFA World Cup 2022?`
+- `Latest geopolitical tensions between USA and Iran`
+- `How to bake a chocolate cake`
+
+### 3. Verification of Trusted Metrics
+Observe the logs to see `[Node: Search]` filtering for domains like `.nih.gov`, `.who.int`, and `.cancer.gov`. Non-trusted sources are automatically ignored.
+
+---
+
+### 🚀 Final Output Quality Enhancements
+- **Hybrid Summarization**: Implemented TF-IDF scoring on processed text while extracting ORIGINAL sentences for maximum readability.
+- **Balanced Sourcing**: Restricted overly technical papers (PubMed/PMC) to 1-2 per report to prioritize readable clinical news.
+- **Strict Prompt Engineering**: Enforced simplified language and structured markdown for readable, professional reports.
+- **Quality Filters**: Discarded low-quality summary fragments (<20 words) to prevent "academic noise" in final reports.
+- **Human-Centric Formatting**: Refined LLM behavior to avoid technical jargon and focus on real-world treatment impacts.
+
+---
