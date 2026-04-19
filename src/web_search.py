@@ -33,10 +33,12 @@ def search_web(query: str) -> List[Dict[str, str]]:
     try:
         with DDGS() as ddgs:
             # We fetch up to 10 to ensure we get 5 valid, unique results
-            # Explicitly force US-English region to bypass regional firewall outputs (like Baidu/Zhihu mapping via local IPs)
-            raw_results = ddgs.text(query, region="us-en", safesearch="moderate", max_results=10)
+            # We fetch up to 10 to ensure we get 5 valid, unique results
+            raw_results = ddgs.text(query, max_results=10)
             
             if not raw_results:
+                print(f"\n  [!] DuckDuckGo returned 0 results for this query.")
+                print(f"      (Try using core keywords instead of conversational sentences like 'latest cancer research')\n")
                 return []
                 
             for res in raw_results:
