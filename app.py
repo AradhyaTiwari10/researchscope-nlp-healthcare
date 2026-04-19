@@ -38,37 +38,83 @@ def parse_report(report_text):
 # Custom Premium CSS Inject
 st.markdown("""
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap');
+
     .main-title {
-        font-size: 3.5rem !important;
+        font-size: 4rem !important;
         font-weight: 800;
-        color: #0F172A;
         text-align: center;
         margin-bottom: -15px;
-        font-family: 'Inter', sans-serif;
+        font-family: 'Outfit', sans-serif;
+        background: linear-gradient(90deg, #00C9FF 0%, #92FE9D 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: fadeInDown 1s ease-out;
     }
+    
     .sub-title {
         font-size: 1.25rem;
-        color: #64748B;
+        color: var(--text-color);
+        opacity: 0.8;
         text-align: center;
         margin-bottom: 30px;
-        font-family: 'Inter', sans-serif;
+        font-family: 'Outfit', sans-serif;
+        animation: fadeInUp 1s ease-out 0.3s both;
     }
+
+    @keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
     .stButton>button {
         border-radius: 8px;
         font-weight: 600;
         transition: all 0.3s ease;
+        border: 1px solid rgba(150, 150, 150, 0.2) !important;
     }
+    
     .stButton>button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 15px rgba(0, 201, 255, 0.2) !important;
+        border-color: #00C9FF !important;
     }
+    
     .glass-card {
-        background: rgba(255, 255, 255, 0.7);
-        border: 1px solid #E2E8F0;
-        border-radius: 12px;
+        background: var(--secondary-background-color);
+        border: 1px solid rgba(150, 150, 150, 0.2);
+        border-radius: 15px;
         padding: 20px;
         margin-bottom: 20px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+        animation: fadeIn 1.5s ease-out;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .pill-tag {
+        background: linear-gradient(135deg, #00C9FF 0%, #92FE9D 100%);
+        color: #000 !important;
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 0.9em;
+        margin-right: 10px;
+        font-weight: 600;
+        display: inline-block;
+        transition: transform 0.3s ease;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .pill-tag:hover {
+        transform: scale(1.05);
     }
 </style>
 """, unsafe_allow_html=True)
@@ -87,11 +133,11 @@ if "current_query" not in st.session_state:
 
 # Premium Example Queries (Pill Layout)
 st.markdown("""
-<div class="glass-card" style="text-align: center; background-color: #F8FAFC;">
-    <span style="color: #475569; font-weight: 600; margin-right: 15px;">💡 Try an example query:</span>
-    <span style="background: #E0F2FE; color: #0284C7; padding: 6px 14px; border-radius: 20px; font-size: 0.9em; margin-right: 10px; font-weight: 500;">AI in cancer detection</span>
-    <span style="background: #E0F2FE; color: #0284C7; padding: 6px 14px; border-radius: 20px; font-size: 0.9em; margin-right: 10px; font-weight: 500;">Diabetes treatment research</span>
-    <span style="background: #E0F2FE; color: #0284C7; padding: 6px 14px; border-radius: 20px; font-size: 0.9em; font-weight: 500;">Infectious disease prevention WHO</span>
+<div class="glass-card" style="text-align: center;">
+    <span style="color: var(--text-color); font-weight: 600; margin-right: 15px;">💡 Try an example query:</span>
+    <span class="pill-tag">AI in cancer detection</span>
+    <span class="pill-tag">Diabetes treatment research</span>
+    <span class="pill-tag">Infectious disease prevention WHO</span>
 </div>
 """, unsafe_allow_html=True)
 
