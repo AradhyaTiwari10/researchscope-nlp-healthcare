@@ -29,19 +29,78 @@ The system previously coupled core NLP business logic tightly with Streamlit UI 
 
 ## Phase 1: Query-Based Input
 
-**Implementation Details:**
-- Added query-driven input prompt to accept dynamic user requests via CLI.
-- Introduced an extensible state dictionary designed for the broader LangGraph/agentic framework.
-- Created `run_query.py` script to simulate the entry point for the agent logic.
+### Implementation Details
 
-**Functions Added:**
-- `agent_state.get_user_query()`
-- `agent_state.initialize_state(query)`
+* Transitioned system input from static document ingestion to dynamic, query-driven interaction.
+* Implemented CLI-based query handler to simulate real user input.
+* Introduced a structured state object to act as the central data carrier across the agent pipeline.
+* Created `run_query.py` as the execution entry point for initializing agent workflows.
 
-**Purpose of State Object:**
-The `state` object encapsulates essential parameters:
-`{"query": "...", "urls": [], "texts": [], "summaries": [], "report": ""}`
-It acts as the central shared memory and message-passing payload across the upcoming node-based agent workflow. Each processing node in Phase 2+ can read from it concurrently, append context (urls, text extracts), and ultimately compile a final report.
+---
 
-**How This Enables Agent Workflow:**
-By modularizing the state and accepting queries upfront, we eliminate reliance on static, local document processing constraints. The system is now primed for web-retrieval and multi-step pipeline chaining characteristic of LangChain/LangGraph architectures, because initial triggers and data sources are cleanly decoupled.
+### Modules Created
+
+* `src/agent_state.py` → Handles query input and state initialization
+
+---
+
+### Functions Implemented
+
+* `get_user_query()` → Captures user query from CLI
+* `initialize_state(query)` → Initializes agent state dictionary
+
+---
+
+### State Object Design
+
+The system introduces a unified state object:
+
+```json
+{
+"query": "...",
+"urls": [],
+"texts": [],
+"summaries": [],
+"report": ""
+}
+```
+
+This state acts as the **single source of truth** throughout the pipeline.
+
+---
+
+### Role in Agent Workflow
+
+* Serves as the input payload for all future processing nodes
+* Enables sequential state updates across:
+
+  * Web retrieval
+  * Text extraction
+  * NLP processing
+  * Report generation
+* Eliminates dependency on static inputs like PDFs
+
+---
+
+### Execution Flow (Current)
+
+User Input → get_user_query() → initialize_state() → print(state)
+
+---
+
+### Testing & Validation
+
+* Successfully executed `run_query.py`
+* Verified correct state initialization
+* Output matches expected structure with empty placeholders
+
+---
+
+### Outcome
+
+The system is now:
+
+* Query-driven ✅
+* State-aware ✅
+* Ready for web integration ✅
+* Compatible with LangGraph workflows ✅
