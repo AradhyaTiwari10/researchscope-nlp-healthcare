@@ -10,6 +10,7 @@ from src.agent_state import get_user_query, initialize_state
 from src.web_search import search_web
 from src.content_extractor import extract_multiple
 from src.nlp_processor import process_articles
+from src.report_generator import generate_report
 
 def main():
     # 1. Get user query
@@ -41,7 +42,14 @@ def main():
     
     print(f"\n=> Generated {len(summarized_data)} summaries.")
     
-    # 6. Output expectation match
+    # 6. Report Generation
+    print("\n📝 Generating Final Structure Report...")
+    final_report = generate_report(state["query"], state["summaries"])
+    state["report"] = final_report
+    
+    print("\n✅ Execution Complete!")
+    
+    # 7. Output expectation match
     print("\nOutput:")
     # We clip the actual text payload for standard output console scrolling so it doesn't flood the terminal
     state_preview = state.copy()
@@ -50,7 +58,12 @@ def main():
             if len(text_doc["text"]) > 100:
                 text_doc["text"] = text_doc["text"][:100] + "... [TRUNCATED FOR PRINT]"
                 
+    # Also preview report safely so it doesn't break console
     print(json.dumps(state_preview, indent=2))
+    
+    print("\n--------- FINAL REPORT PREVIEW ---------")
+    print(state["report"])
+    print("----------------------------------------\n")
 
 if __name__ == "__main__":
     main()
