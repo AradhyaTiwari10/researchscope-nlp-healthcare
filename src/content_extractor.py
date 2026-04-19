@@ -14,7 +14,7 @@ Public API:
   extract_multiple(search_results: list) -> list
 """
 
-from newspaper import Article
+from newspaper import Article, Config
 
 def extract_article(url: str) -> dict:
     """
@@ -28,7 +28,13 @@ def extract_article(url: str) -> dict:
     """
     try:
         print(f"  [+] Downloading: {url}")
-        article = Article(url)
+        
+        # Configure the scraper to look like a real browser to bypass 403 walls
+        custom_config = Config()
+        custom_config.browser_user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        custom_config.request_timeout = 15
+        
+        article = Article(url, config=custom_config)
         article.download()
         article.parse()
         text = article.text.strip()

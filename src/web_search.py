@@ -33,7 +33,8 @@ def search_web(query: str) -> List[Dict[str, str]]:
     try:
         with DDGS() as ddgs:
             # We fetch up to 10 to ensure we get 5 valid, unique results
-            raw_results = ddgs.text(query, max_results=10)
+            # Explicitly force US-English region to bypass regional firewall outputs (like Baidu/Zhihu mapping via local IPs)
+            raw_results = ddgs.text(query, region="us-en", safesearch="moderate", max_results=10)
             
             if not raw_results:
                 return []
