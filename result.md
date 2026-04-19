@@ -176,3 +176,9 @@ This phase officially transitions the pipeline from a sterile input state to a R
   ]
 }
 ```
+
+### Observations & Improvements
+- Implemented error handling for inaccessible URLs (e.g., 403 errors)
+- Added filtering to skip low-content articles
+- Cleaned extracted text to remove excessive whitespace
+- Limited extraction to top 3–5 valid articles for efficiency

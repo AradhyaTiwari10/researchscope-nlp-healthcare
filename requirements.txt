@@ -10,3 +10,4 @@ altair
 pandas
 duckduckgo_search
 newspaper3k
+lxml_html_clean

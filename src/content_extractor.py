@@ -35,6 +35,13 @@ def extract_article(url: str) -> dict:
         
         if not text:
             print(f"  [-] Warning: Extracted text is empty for {url}")
+            return { "url": url, "text": "" }
+            
+        text = " ".join(text.split())
+        
+        if len(text.split()) < 100:
+            print(f"  [-] Warning: Extracted text too short (<100 words) for {url}")
+            return { "url": url, "text": "" }
             
         return {
             "url": url,
@@ -59,7 +66,7 @@ def extract_multiple(search_results: list, max_articles: int = 5) -> list:
     Returns:
         list: A list of dictionaries containing URLs and their text.
     """
-    extracted = []
+    extracted_articles = []
     
     for res in search_results:
         url = res.get("url")
@@ -71,10 +78,10 @@ def extract_multiple(search_results: list, max_articles: int = 5) -> list:
         
         # Only preserve if we successfully pulled strings out
         if result["text"]:
-            extracted.append(result)
+            extracted_articles.append(result)
             
         # Stop once we've reached our retrieval limit across valid pulls
-        if len(extracted) >= max_articles:
+        if len(extracted_articles) >= max_articles:
             break
             
-    return extracted
+    return extracted_articles[:5]
