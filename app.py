@@ -1,11 +1,14 @@
 import streamlit as st
 import re
-import os
 import time
 from dotenv import load_dotenv
 
-# Import the LangGraph agent
-from src.agent_graph import run_agent
+# Import the core NLP pipeline functions for manual execution
+from src.web_search import search_web
+from src.content_extractor import extract_multiple
+from src.nlp_processor import process_articles
+from src.report_generator import generate_report
+from src.utils import is_medical_query
 
 # Auto-load environment variables
 load_dotenv()
@@ -19,8 +22,6 @@ st.set_page_config(
 def parse_report(report_text):
     """Safely parse the sections of the text report."""
     sections = {}
-    
-    # Split using known headers from the formatting prompt
     try:
         parts = re.split(r'(Title:|Abstract:|Key Findings:|Conclusion:|Sources:)', report_text)
         current_header = None
@@ -32,18 +33,22 @@ def parse_report(report_text):
                 sections[current_header] = part_strip
     except Exception:
         pass
-        
     return sections
 
 # UI Header Section
 st.title("🩺 ResearchScope NLP Healthcare")
-st.subheader("AI-powered Healthcare Research Assistant")
+st.subheader("Interactive Pipeline Walkthrough Mode")
 st.warning("⚠️ Only healthcare-related queries are supported")
 
-# Initialize session state for history
-if "history" not in st.session_state:
-    st.session_state.history = []
+# Handle Interactive Step-By-Step State
+if "step" not in st.session_state:
+    st.session_state.step = 0
+if "cache" not in st.session_state:
+    st.session_state.cache = {}
+if "current_query" not in st.session_state:
+    st.session_state.current_query = ""
 
+# Example queries helping users start quickly
 st.markdown("""
 ### 🔍 Try these examples:
 - AI in cancer detection
@@ -51,135 +56,162 @@ st.markdown("""
 - infectious disease prevention WHO
 """)
 
-col1, col2 = st.columns([8, 1])
-with col1:
-    # Input Section
+col_input, col_clear = st.columns([8, 1])
+with col_input:
     query = st.text_input("Enter your research query:", placeholder="e.g. latest cancer treatment research")
-with col2:
+with col_clear:
     st.write("")
     st.write("")
-    if st.button("Clear"):
-        st.session_state.clear()
+    if st.button("Reset Pipeline"):
+        st.session_state.step = 0
+        st.session_state.cache = {}
+        st.session_state.current_query = ""
         st.rerun()
 
-if st.session_state.history:
-    with st.expander("🕒 Search History"):
-        for past_query in reversed(st.session_state.history):
-            st.write(f"- {past_query}")
+# Reset state if the query changes
+if query != st.session_state.current_query and query != "":
+    st.session_state.step = 0
+    st.session_state.cache = {}
+    st.session_state.current_query = query
 
-# Execution Flow
-if st.button("Analyze Research", type="primary"):
+if query:
+    query_cleaned = query.strip().lstrip(">").strip()
     
-    # Validation
-    query = query.strip().lstrip(">").strip()
-    if not query:
-        st.warning("Please enter a research query.")
-    else:
-        # Progress Indicators
-        st.session_state.history.append(query)
-        
-        with st.status("Processing query...", expanded=True) as status:
-            st.write("🔍 Searching medical sources...")
-            time.sleep(0.5)
-            st.write("📄 Extracting content...")
-            time.sleep(0.5)
-            st.write("🧠 Running NLP analysis...")
-            time.sleep(0.5)
-            st.write("🤖 Generating report...")
-            
-            try:
-                # 1. Call Backend
-                start_time = time.time()
-                result = run_agent(query)
-                end_time = time.time()
-                report = result.get("report", "")
+    # Check Scope First
+    if not is_medical_query(query_cleaned):
+        st.error("❌ OUT OF SCOPE: The ResearchScope agent is specialized for medical and healthcare research. Please enter a valid query.")
+        st.stop()
+
+    st.divider()
+    
+    # ==========================================
+    # STEP 1: Search & Retrieval
+    # ==========================================
+    col1_th, col1_act = st.columns([1, 1.5])
+    with col1_th:
+        st.markdown("### 1. Retrieval (RAG)")
+        st.markdown("**🔍 Theory & Tools:** We use **DuckDuckGo Search (`ddgs`)** to query the live internet. We enforce a deterministic **ScopeGuard Algorithm** that filters out generic sites and guarantees strict inclusion of verifiable medical domains (like *NIH, WHO, Medical News Today*). This prevents the AI from encountering fake news.")
+        if st.session_state.step == 0:
+            if st.button("🔍 Search medical sources...", type="primary"):
+                with st.spinner("Searching..."):
+                    st.session_state.cache["search_results"] = search_web(query_cleaned)
+                    st.session_state.step = 1
+                    st.rerun()
+    with col1_act:
+        if st.session_state.step >= 1:
+            st.success("✅ Search Complete")
+            results = st.session_state.cache.get("search_results", [])
+            st.write(f"**Found {len(results)} trusted sources:**")
+            for res in results:
+                st.write(f"- 🔗 {res['url']}")
                 
-                # 2. Output Handling
-                if report.startswith("❌") or "Report generation failed" in report or "Insufficient valid text" in report:
-                    status.update(label="Analysis Failed", state="error", expanded=True)
-                    st.error(report)
-                elif "⚠️ LLM request failed" in report:
-                    status.update(label="API Error", state="error", expanded=True)
-                    st.error("LLM Generation failed due to rate limits or API errors. Please retry in a moment.")
+    # ==========================================
+    # STEP 2: Content Extraction
+    # ==========================================
+    if st.session_state.step >= 1:
+        st.divider()
+        col2_th, col2_act = st.columns([1, 1.5])
+        with col2_th:
+            st.markdown("### 2. Payload Extraction")
+            st.markdown("**📄 Theory & Tools:** Raw HTML is messy and full of ads. We use the **`newspaper3k`** library to aggressively parse the website's DOM structure. By simulating HTTP headers to bypass bot-checks, it isolates pure academic body text while stripping away useless navigation bars that would bloat the AI memory.")
+            if st.session_state.step == 1:
+                if st.button("📄 Extract content...", type="primary"):
+                    with st.spinner("Downloading HTML and extracting text..."):
+                        st.session_state.cache["texts"] = extract_multiple(st.session_state.cache["search_results"])
+                        st.session_state.step = 2
+                        st.rerun()
+        with col2_act:
+            if st.session_state.step >= 2:
+                st.success("✅ Extraction Complete")
+                texts = st.session_state.cache.get("texts", [])
+                for txt in texts:
+                    count = len(txt['text'].split())
+                    st.write(f"- Downloaded **{count} words** from {txt['url'].split('//')[-1].split('/')[0]}")
+
+    # ==========================================
+    # STEP 3: NLP Operations (TF-IDF & LDA)
+    # ==========================================
+    if st.session_state.step >= 2:
+        st.divider()
+        col3_th, col3_act = st.columns([1, 1.5])
+        with col3_th:
+            st.markdown("### 3. NLP Analysis")
+            st.markdown("**🧠 Theory & Tools:** Before using LLMs, we mathematically reduce the text to prevent 'hallucinations'. Using **Scikit-Learn**, we build a **TF-IDF Vector Matrix** to score word importance. This creates **Extractive Summaries**. We also use **LDA (Latent Dirichlet Allocation)** for unsupervised machine learning to find hidden Topic Clusters.")
+            if st.session_state.step == 2:
+                if st.button("🧠 Run NLP analysis...", type="primary"):
+                    with st.spinner("Building TF-IDF Matrices and running LDA..."):
+                        summaries, topics = process_articles(st.session_state.cache["texts"])
+                        st.session_state.cache["summaries"] = summaries
+                        st.session_state.cache["topics"] = topics
+                        st.session_state.step = 3
+                        st.rerun()
+        with col3_act:
+            if st.session_state.step >= 3:
+                st.success("✅ NLP Processing Complete")
+                topics = st.session_state.cache.get("topics", [])
+                st.write("**Discovered Topic Clusters (Latent Themes):**")
+                for idx, words in topics:
+                    st.write(f"- **Cluster {idx+1}:** {', '.join(words)}")
+
+    # ==========================================
+    # STEP 4: LLM Synthesis
+    # ==========================================
+    if st.session_state.step >= 3:
+        st.divider()
+        col4_th, col4_act = st.columns([1, 1.5])
+        with col4_th:
+            st.markdown("### 4. Generative Synthesis")
+            st.markdown("**🤖 Theory & Tools:** We feed the dense mathematical summaries into **Groq's LLaMA-3.3-Versatile LPU**. We use an architecture called **Prompt Decomposition**. Instead of 1 giant prompt, the agent asks 3 focused questions to generate the Abstract, Findings, and Conclusion in a perfectly formatted structure.")
+            if st.session_state.step == 3:
+                if st.button("🤖 Generate report...", type="primary"):
+                    with st.spinner("Synthesizing final report with Groq API..."):
+                        start_time = time.time()
+                        report = generate_report(query_cleaned, st.session_state.cache["summaries"])
+                        st.session_state.cache["exec_time"] = time.time() - start_time
+                        st.session_state.cache["report"] = report
+                        st.session_state.step = 4
+                        st.rerun()
+        with col4_act:
+            if st.session_state.step >= 4:
+                st.success(f"✅ Generated in {st.session_state.cache.get('exec_time', 0):.2f} seconds!")
+                
+                # --- RENDER FINAL PDF EXPORT AND REPORT ---
+                st.divider()
+                report = st.session_state.cache.get("report", "")
+                parsed = parse_report(report)
+                
+                st.header("Medical Context Report")
+                
+                # PDF GENERATION
+                topics_disp = "\n".join([f"Cluster {idx+1}: {', '.join(words)}" for idx, words in st.session_state.cache.get("topics", [])])
+                try:
+                    from fpdf import FPDF
+                    def generate_pdf(rep_text, top_text):
+                        pdf = FPDF()
+                        pdf.add_page()
+                        pdf.set_auto_page_break(auto=True, margin=15)
+                        pdf.set_font("Arial", size=11)
+                        rep_clean = rep_text.replace("📘", "").replace("🔬", "").replace("📊", "").replace("🔗", "")
+                        clean_text = (rep_clean + "\n\n--- NLP TOPIC CLUSTERS ---\n" + top_text).encode("latin-1", "replace").decode("latin-1")
+                        for line in clean_text.split('\n'):
+                            pdf.multi_cell(0, 7, txt=line)
+                        return pdf.output(dest="S").encode("latin-1")
+                    
+                    pdf_bytes = generate_pdf(report, topics_disp)
+                    st.download_button("📄 Download Complete Report as PDF", data=pdf_bytes, file_name="researchscope_report.pdf", mime="application/pdf")
+                except:
+                    pass
+
+                # RENDER TEXT
+                if parsed and "Title" in parsed:
+                    st.markdown(f"*{parsed.get('Title', '')}*")
+                    st.subheader("📘 Abstract")
+                    st.markdown(parsed.get("Abstract", ""))
+                    st.subheader("🔬 Key Findings")
+                    st.markdown(parsed.get("Key Findings", ""))
+                    st.subheader("📊 Conclusion")
+                    st.markdown(parsed.get("Conclusion", ""))
+                    st.subheader("🔗 Verified Sources")
+                    st.markdown(parsed.get("Sources", ""))
                 else:
-                    status.update(label="✅ Analysis Complete", state="complete", expanded=False)
-                    st.info(f"⏱️ Execution Time: {end_time - start_time:.2f}s")
-                    
-                    # 3. Output Display
-                    st.divider()
-                    
-                    parsed_sections = parse_report(report)
-                    
-                    if parsed_sections and "Title" in parsed_sections:
-                        # Display parsed structured sections
-                        st.header(parsed_sections.get("Title", "Research Report"))
-                        
-                        st.subheader("📘 Abstract")
-                        st.markdown(parsed_sections.get("Abstract", "No abstract available."))
-                        
-                        st.subheader("🔬 Key Findings")
-                        st.markdown(parsed_sections.get("Key Findings", "No findings extracted."))
-                        
-                        st.subheader("📊 Conclusion")
-                        st.markdown(parsed_sections.get("Conclusion", "No conclusion drawn."))
-                        
-                        st.subheader("🔗 Sources")
-                        st.markdown(parsed_sections.get("Sources", "No sources provided."))
-                        
-                        st.divider()
-                        st.subheader("📈 NLP Analytics (Agentic Intelligence)")
-                        
-                        topics = result.get("topics", [])
-                        summaries = result.get("summaries", [])
-                        topics_disp = ""
-                        
-                        if topics:
-                            st.write("**Discovered Topic Clusters & Key Terms:**")
-                            for topic_idx, words in topics:
-                                line = f"Cluster {topic_idx+1}: {', '.join(words)}"
-                                st.write(f"- **{line}**")
-                                topics_disp += f"{line}\n"
-                                
-                        with st.expander("View Extractive Summaries"):
-                            for sm in summaries:
-                                st.write(f"**Source:** {sm.get('url', 'Unknown')}")
-                                st.write(f"{sm.get('summary', '')}")
-                                st.divider()
-                                
-                        # PDF Export Extension
-                        st.subheader("📥 Export")
-                        
-                        try:
-                            from fpdf import FPDF
-                            def generate_pdf(rep_text, top_text):
-                                pdf = FPDF()
-                                pdf.add_page()
-                                pdf.set_auto_page_break(auto=True, margin=15)
-                                pdf.set_font("Arial", size=11)
-                                
-                                # Strip emojis manually for basic PDF compatibility
-                                rep_clean = rep_text.replace("📘", "").replace("🔬", "").replace("📊", "").replace("🔗", "")
-                                text = rep_clean + "\n\n--- NLP TOPIC CLUSTERS ---\n" + top_text
-                                clean_text = text.encode("latin-1", "replace").decode("latin-1")
-                                
-                                for line in clean_text.split('\n'):
-                                    pdf.multi_cell(0, 7, txt=line)
-                                return pdf.output(dest="S").encode("latin-1")
-                            
-                            pdf_bytes = generate_pdf(report, topics_disp)
-                            st.download_button(
-                                label="📄 Download Report as PDF",
-                                data=pdf_bytes,
-                                file_name="researchscope_report.pdf",
-                                mime="application/pdf"
-                            )
-                        except Exception as pdf_err:
-                            st.warning("PDF generation available after installing missing dependencies.")
-                    else:
-                        # Fallback to display raw output if parsing failed
-                        st.write("Report generated, but structured parsing failed. Raw output below:")
-                        st.markdown(report)
-                        
-            except Exception as e:
-                status.update(label="Error processing query", state="error", expanded=True)
-                st.error(f"An unexpected error occurred: {str(e)}")
+                    st.markdown(report)
