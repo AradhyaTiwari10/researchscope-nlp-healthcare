@@ -338,3 +338,12 @@ Observe the logs to see `[Node: Search]` filtering for domains like `.nih.gov`, 
 - **Output improvement**: Report output depth increased from 1-2 sentences to structured multi-paragraph reports.
 
 ---
+
+### 🚀 Migration: Flan-T5 → Groq (llama3-70b-8192)
+- **Replaced** local HuggingFace Flan-T5-base with Groq-hosted `llama3-70b-8192` model.
+- **Why**: Flan-T5 has a ~512 token window and compresses outputs aggressively. `llama3-70b` has an 8192-token window and produces vastly superior structured reports.
+- **Architecture preserved**: Multi-step prompt decomposition maintained — Abstract, Key Findings, and Conclusion still generated independently for guaranteed structure.
+- **Cost**: Free-tier Groq API (no credit card). Suitable for demos and capstone evaluations.
+- **Speed**: Groq inference is ~10x faster than local CPU inference.
+
+---
