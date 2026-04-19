@@ -34,7 +34,7 @@ def get_client():
                 "      export GROQ_API_KEY='your_key_here'\n\n"
                 "  Get a free key at: https://console.groq.com/keys\n"
             )
-        print("  [*] Connecting to Groq (llama3-70b-8192)...")
+        print("  [*] Connecting to Groq (llama-3.3-70b-versatile)...")
         _client = Groq(api_key=api_key)
     return _client
 
@@ -47,7 +47,7 @@ def _run_prompt(prompt: str, max_tokens: int = 800) -> str:
     try:
         client = get_client()
         response = client.chat.completions.create(
-            model="mixtral-8x7b-32768",
+            model="llama-3.3-70b-versatile",
             messages=[{"role": "user", "content": prompt}],
             max_tokens=max_tokens,
             temperature=0.3,  # Lower = more factual, less hallucination
