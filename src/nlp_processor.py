@@ -66,9 +66,9 @@ def process_articles(text_data: List[Dict[str, str]]) -> List[Dict[str, str]]:
         url = item["url"]
         processed_text = processed_texts[idx]
         
-        # Summarize logic handles standard sentence tokenization internally
+        # Summarize logic uses TF-IDF to score internal processed mapping but extracts original sentences natively
         article_summary = summarize(
-            processed_text,
+            original_text,
             global_vectorizer,
             top_n=3
         )

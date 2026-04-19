@@ -56,35 +56,33 @@ def summarize(text: str, vectorizer: Any, top_n: int = 3) -> str:
     if not abstract_text:
         abstract_text = text[:2000] # Fallback to first 2000 characters if structure is unclear
 
-    # 2. Basic cleanup for summarization (not the full linguistic preprocessing, 
-    # to preserve readability of the output summary)
-    clean_abstract = clean_text(abstract_text)
-    
-    # 3. Tokenize sentences
-    sentences = sent_tokenize(clean_abstract)
-    if len(sentences) <= top_n:
-        return " ".join(sentences)
+    # 2. Tokenize original sentences first to preserve punctuation and readability
+    original_sentences = sent_tokenize(abstract_text)
+    if len(original_sentences) <= top_n:
+        return " ".join(original_sentences)
         
+    # 3. Clean sentences for feature extraction scoring ONLY
+    cleaned_sentences = [clean_text(s) for s in original_sentences]
+    
     # 4. Feature Extraction
-    # We fit the provided vectorizer specifically on these sentences in order to score them
-    # Note: Using the standalone module approach
+    # We fit the provided vectorizer specifically on these cleaned sentences in order to score them
     try:
-        X = vectorizer.fit_transform(sentences)
+        X = vectorizer.fit_transform(cleaned_sentences)
     except ValueError:
         # Happens if vocab is empty or sentences are too short
-        return " ".join(sentences[:top_n])
+        return " ".join(original_sentences[:top_n])
     
     # 5. Score Sentences
     sentence_scores = X.sum(axis=1) # Sum of TF-IDF scores across words in the sentence
     
     # 6. Rank Sentences
     ranked = sorted(
-        [(sentence_scores[i, 0], i) for i in range(len(sentences))],
+        [(sentence_scores[i, 0], i) for i in range(len(original_sentences))],
         reverse=True
     )
     
     # 7. Reconstruct Summary (maintaining original order)
     top_indices = sorted([idx for score, idx in ranked[:top_n]])
-    summary = " ".join([sentences[idx] for idx in top_indices])
+    summary = " ".join([original_sentences[idx] for idx in top_indices])
     
     return summary

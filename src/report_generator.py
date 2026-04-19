@@ -63,21 +63,36 @@ def generate_report(query: str, summaries: list) -> str:
         combined_context = combined_context[:1500] + "..."
         
     # 2. Design Prompt
-    prompt = (
-        f"Given the following research summaries about: {query}\n\n"
-        f"Summaries:\n{combined_context}\n\n"
-        "Generate the report STRICTLY in this format:\n\n"
-        "Title:\n"
-        "...\n\n"
-        "Abstract:\n"
-        "...\n\n"
-        "Key Findings:\n"
-        "- ...\n"
-        "- ...\n\n"
-        "Conclusion:\n"
-        "...\n\n"
-        "Keep it factual and concise based ONLY on the summaries provided."
-    )
+    prompt = f"""You are a medical research assistant.
+
+Using ONLY the provided summaries, generate a structured research report.
+
+STRICT FORMAT:
+
+Title:
+<short title>
+
+Abstract:
+<2-3 sentences summary>
+
+Key Findings:
+- point 1
+- point 2
+- point 3
+
+Conclusion:
+<final insights>
+
+Query: {query}
+
+Summaries:
+{combined_context}
+
+IMPORTANT:
+- Do NOT merge sections
+- Do NOT write as one paragraph
+- Keep bullet points clearly separated
+"""
     
     # 3. Generate Text via LLM
     print("  [*] Generating formal structure via LLM...")

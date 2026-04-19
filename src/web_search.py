@@ -33,31 +33,42 @@ def search_web(query: str) -> List[Dict[str, str]]:
     try:
         with DDGS() as ddgs:
             # First attempt with full query
-            raw_results = list(ddgs.text(query, max_results=10))
+            raw_results = list(ddgs.text(query, max_results=30))
             
             # If first attempt fails, try a simplified version (first 4 words)
             if not raw_results:
                 simplified_query = " ".join(query.split()[:4])
                 if simplified_query != query:
                     print(f"  [!] Primary search returned 0 results. Retrying with: '{simplified_query}'...")
-                    raw_results = list(ddgs.text(simplified_query, max_results=10))
+                    raw_results = list(ddgs.text(simplified_query, max_results=30))
             
             if not raw_results:
                 print(f"\n  [!] DuckDuckGo returned 0 results for this query.")
                 print(f"      (Try using core keywords instead of conversational sentences like 'latest cancer research')\n")
                 return []
                 
+            TRUSTED_DOMAINS = [
+                "nih.gov",
+                "who.int",
+                "mayoclinic.org",
+                "cancer.gov",
+                "medicalnewstoday.com",
+                "sciencedaily.com"
+            ]
+            
             for res in raw_results:
                 url = res.get("href", "")
                 
-                # Filter out invalid or duplicate URLs
+                # Filter out invalid, duplicate URLs or non-trusted sources
                 if url and url not in seen_urls:
-                    seen_urls.add(url)
-                    results.append({
-                        "title": res.get("title", ""),
-                        "url": url,
-                        "snippet": res.get("body", "")
-                    })
+                    is_trusted = any(domain in url.lower() for domain in TRUSTED_DOMAINS)
+                    if is_trusted:
+                        seen_urls.add(url)
+                        results.append({
+                            "title": res.get("title", ""),
+                            "url": url,
+                            "snippet": res.get("body", "")
+                        })
                     
                 if len(results) >= 5:
                     break
