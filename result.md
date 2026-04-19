@@ -258,11 +258,10 @@ Sources:
 ```
 
 ### Improvements & Optimizations
-- Implemented lazy loading for HuggingFace model to improve performance
-- Strengthened prompt format to enforce structured output
-- Reduced dependency on post-processing string replacements
-- Added safeguards for empty or weak LLM responses
 - Optional deduplication of summaries to improve report clarity
+- Implemented robust search retry logic with query simplification to handle strict indexing or rate limiting
+- Resolved HuggingFace pipeline `text2text-generation` task errors by utilizing architectural auto-inference
+- Fixed SSL and 403 Forbidden errors in extraction by spoofing modern browser User-Agents and enforcing US-English search regions where applicable
 
 ---
 

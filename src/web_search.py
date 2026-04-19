@@ -32,9 +32,15 @@ def search_web(query: str) -> List[Dict[str, str]]:
     
     try:
         with DDGS() as ddgs:
-            # We fetch up to 10 to ensure we get 5 valid, unique results
-            # We fetch up to 10 to ensure we get 5 valid, unique results
-            raw_results = ddgs.text(query, max_results=10)
+            # First attempt with full query
+            raw_results = list(ddgs.text(query, max_results=10))
+            
+            # If first attempt fails, try a simplified version (first 4 words)
+            if not raw_results:
+                simplified_query = " ".join(query.split()[:4])
+                if simplified_query != query:
+                    print(f"  [!] Primary search returned 0 results. Retrying with: '{simplified_query}'...")
+                    raw_results = list(ddgs.text(simplified_query, max_results=10))
             
             if not raw_results:
                 print(f"\n  [!] DuckDuckGo returned 0 results for this query.")
