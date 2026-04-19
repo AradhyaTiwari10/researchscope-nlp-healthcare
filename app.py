@@ -1,6 +1,7 @@
 import streamlit as st
 import re
 import os
+import time
 from dotenv import load_dotenv
 
 # Import the LangGraph agent
@@ -39,8 +40,32 @@ st.title("🩺 ResearchScope NLP Healthcare")
 st.subheader("AI-powered Healthcare Research Assistant")
 st.warning("⚠️ Only healthcare-related queries are supported")
 
-# Input Section
-query = st.text_input("Enter your research query:", placeholder="e.g. latest cancer treatment research")
+# Initialize session state for history
+if "history" not in st.session_state:
+    st.session_state.history = []
+
+st.markdown("""
+### 🔍 Try these examples:
+- AI in cancer detection
+- diabetes treatment research
+- infectious disease prevention WHO
+""")
+
+col1, col2 = st.columns([8, 1])
+with col1:
+    # Input Section
+    query = st.text_input("Enter your research query:", placeholder="e.g. latest cancer treatment research")
+with col2:
+    st.write("")
+    st.write("")
+    if st.button("Clear"):
+        st.session_state.clear()
+        st.rerun()
+
+if st.session_state.history:
+    with st.expander("🕒 Search History"):
+        for past_query in reversed(st.session_state.history):
+            st.write(f"- {past_query}")
 
 # Execution Flow
 if st.button("Analyze Research", type="primary"):
@@ -51,15 +76,22 @@ if st.button("Analyze Research", type="primary"):
         st.warning("Please enter a research query.")
     else:
         # Progress Indicators
+        st.session_state.history.append(query)
+        
         with st.status("Processing query...", expanded=True) as status:
             st.write("🔍 Searching medical sources...")
+            time.sleep(0.5)
             st.write("📄 Extracting content...")
+            time.sleep(0.5)
             st.write("🧠 Running NLP analysis...")
+            time.sleep(0.5)
             st.write("🤖 Generating report...")
             
             try:
                 # 1. Call Backend
+                start_time = time.time()
                 result = run_agent(query)
+                end_time = time.time()
                 report = result.get("report", "")
                 
                 # 2. Output Handling
@@ -71,6 +103,7 @@ if st.button("Analyze Research", type="primary"):
                     st.error("LLM Generation failed due to rate limits or API errors. Please retry in a moment.")
                 else:
                     status.update(label="✅ Analysis Complete", state="complete", expanded=False)
+                    st.info(f"⏱️ Execution Time: {end_time - start_time:.2f}s")
                     
                     # 3. Output Display
                     st.divider()
