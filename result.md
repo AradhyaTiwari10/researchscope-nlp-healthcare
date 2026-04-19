@@ -139,3 +139,40 @@ The system is now:
 ### Role in Agent Workflow
 
 This phase officially transitions the pipeline from a sterile input state to a Retrieval-Augmented Generation (RAG) agent. By fetching top real-world results dynamically based on user prompts, the workflow acts as an AI Researcher that gathers its own context explicitly before doing extractive analysis or summarization.
+
+---
+
+## Phase 3: Content Extraction
+
+### Implementation Details
+
+* Transitioned from raw URLs to full-text document payloads using `newspaper3k`.
+* Implemented `extract_article()` to manage per-URL downloading, parsing, and text extraction securely.
+* Implemented `extract_multiple()` to loop over `state["search_results"]` specifically, limiting total pulls to 5 valid sources and ignoring failed URLs.
+* Updated `run_query.py` to embed the extracted content payload securely into `state["texts"]`.
+
+### Modules Created
+
+* `src/content_extractor.py` → Executes robust URL text-parsing and NLP normalization routines.
+
+### Functions Implemented
+
+* `extract_article(url: str) -> dict` → Attempts article download and parses it into `{"url": url, "text": "..."}`.
+* `extract_multiple(search_results: list) -> list` → Filters and extracts multiple results cleanly handling failures gracefully.
+
+### Challenges Handled
+- **Failed URLs & Paywalls**: Gracefully skipped via explicit `try-except` blocks without crashing the workflow.
+- **Empty Pages**: Text length filters ignore pages that return sterile/empty content.
+
+### Example Output Structure
+
+```json
+{
+  "texts": [
+    {
+      "url": "https://example.com/paper",
+      "text": "The implementation of ML in early clinical screening..."
+    }
+  ]
+}
+```

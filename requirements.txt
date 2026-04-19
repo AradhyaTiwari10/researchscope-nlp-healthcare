@@ -9,3 +9,4 @@ seaborn
 altair
 pandas
 duckduckgo_search
+newspaper3k
