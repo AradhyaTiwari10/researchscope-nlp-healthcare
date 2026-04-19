@@ -125,6 +125,56 @@ if st.button("Analyze Research", type="primary"):
                         
                         st.subheader("🔗 Sources")
                         st.markdown(parsed_sections.get("Sources", "No sources provided."))
+                        
+                        st.divider()
+                        st.subheader("📈 NLP Analytics (Agentic Intelligence)")
+                        
+                        topics = result.get("topics", [])
+                        summaries = result.get("summaries", [])
+                        topics_disp = ""
+                        
+                        if topics:
+                            st.write("**Discovered Topic Clusters & Key Terms:**")
+                            for topic_idx, words in topics:
+                                line = f"Cluster {topic_idx+1}: {', '.join(words)}"
+                                st.write(f"- **{line}**")
+                                topics_disp += f"{line}\n"
+                                
+                        with st.expander("View Extractive Summaries"):
+                            for sm in summaries:
+                                st.write(f"**Source:** {sm.get('url', 'Unknown')}")
+                                st.write(f"{sm.get('summary', '')}")
+                                st.divider()
+                                
+                        # PDF Export Extension
+                        st.subheader("📥 Export")
+                        
+                        try:
+                            from fpdf import FPDF
+                            def generate_pdf(rep_text, top_text):
+                                pdf = FPDF()
+                                pdf.add_page()
+                                pdf.set_auto_page_break(auto=True, margin=15)
+                                pdf.set_font("Arial", size=11)
+                                
+                                # Strip emojis manually for basic PDF compatibility
+                                rep_clean = rep_text.replace("📘", "").replace("🔬", "").replace("📊", "").replace("🔗", "")
+                                text = rep_clean + "\n\n--- NLP TOPIC CLUSTERS ---\n" + top_text
+                                clean_text = text.encode("latin-1", "replace").decode("latin-1")
+                                
+                                for line in clean_text.split('\n'):
+                                    pdf.multi_cell(0, 7, txt=line)
+                                return pdf.output(dest="S").encode("latin-1")
+                            
+                            pdf_bytes = generate_pdf(report, topics_disp)
+                            st.download_button(
+                                label="📄 Download Report as PDF",
+                                data=pdf_bytes,
+                                file_name="researchscope_report.pdf",
+                                mime="application/pdf"
+                            )
+                        except Exception as pdf_err:
+                            st.warning("PDF generation available after installing missing dependencies.")
                     else:
                         # Fallback to display raw output if parsing failed
                         st.write("Report generated, but structured parsing failed. Raw output below:")

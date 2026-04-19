@@ -16,22 +16,23 @@ Public API:
 from src.preprocessing import preprocess
 from src.feature_engineering import extract_features
 from src.summarizer import summarize
-from typing import List, Dict
+from src.topic_modeling import get_topics
+from typing import List, Dict, Tuple, Any
 
-def process_articles(text_data: List[Dict[str, str]]) -> List[Dict[str, str]]:
+def process_articles(text_data: List[Dict[str, str]]) -> Tuple[List[Dict[str, str]], List[Tuple[int, List[str]]]]:
     """
-    Process extracted raw texts mapping summaries back to article URLs.
+    Process extracted raw texts mapping summaries back to article URLs, and
+    perform topic modeling to extract key terms/themes.
     
     Args:
         text_data (list): List of extracted target dicts:
                           [{"url": "...", "text": "..."}]
                           
     Returns:
-        list: Summarized intelligence payload:
-              [{"url": "...", "summary": "..."}]
+        tuple: (Summarized intelligence payload list, List of Topic clusters)
     """
     if not text_data:
-        return []
+        return [], []
         
     # 1. Filter out empty or misformatted entries
     valid_data = [
@@ -39,7 +40,7 @@ def process_articles(text_data: List[Dict[str, str]]) -> List[Dict[str, str]]:
         if item.get("text") and item.get("url") and len(item["text"].split()) > 60
     ]
     if not valid_data:
-        return []
+        return [], []
         
     print("  [*] Preprocessing texts for NLP...")
     raw_texts = [item["text"] for item in valid_data]
@@ -56,7 +57,16 @@ def process_articles(text_data: List[Dict[str, str]]) -> List[Dict[str, str]]:
         # Revert to standard initialization if empty vocabulary arises
         from sklearn.feature_extraction.text import TfidfVectorizer
         global_vectorizer = TfidfVectorizer()
-        global_vectorizer.fit(processed_texts)
+        X = global_vectorizer.fit_transform(processed_texts)
+        
+    # 3.5 Generate Topic Clusters using LDA
+    print("  [*] Performing NLP Topic Modeling...")
+    try:
+        # Extract top 3 topics with 5 key terms each
+        topics = get_topics(X, global_vectorizer, num_topics=min(3, len(valid_data)), num_words=5)
+    except Exception as e:
+        print(f"  [-] Topic modeling failed: {e}")
+        topics = []
 
     # 4. Generate Summaries
     print("  [*] Generating summaries...")
@@ -82,4 +92,4 @@ def process_articles(text_data: List[Dict[str, str]]) -> List[Dict[str, str]]:
         else:
             print(f"  [-] Skipping low-quality/short summary for: {url}")
             
-    return results
+    return results, topics

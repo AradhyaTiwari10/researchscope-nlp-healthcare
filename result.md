@@ -362,3 +362,36 @@ Observe the logs to see `[Node: Search]` filtering for domains like `.nih.gov`, 
 - Added structured report rendering
 - Implemented loading states and error handling
 - Prepared system for deployment
+
+## End-Sem Deliverables (Final Milestone 2)
+### ✅ Agentic AI Workflow using LangGraph 
+- Implemented robust multi-step control flow (ScopeGuard → Search → Extract → Process → Report).
+- Explicit state management implemented across workflow nodes.
+- Handle APIs correctly (skips 403 blocks dynamically, handles Groq AI limits natively).
+
+### ✅ Structured Output & NLP Features 
+- Extracted and integrated **Topics Clusters** and **Key Terms** seamlessly using LDA algorithm via backend tf-idf scores. 
+- Original **Extractive Summaries** directly mapped to source URLs for transparency.
+- Full structural output returned correctly (Title, Abstract, Key Findings, Conclusion, Sources).
+
+### ✅ Enhanced UI & Extension
+- Streamlit UI acts as the unified frontend bridging user query to agent execution.
+- Added visual staggered status indicators for loading pipelines.
+- **Extension Chosen:** PDF Export. Developed on-the-fly markdown-to-PDF rendering capabilities integrating  directly inside the frontend component to let operators easily download health reports securely offline.
+
+
+## End-Sem Deliverables (Final Milestone 2)
+### ✅ Agentic AI Workflow using LangGraph
+- Implemented robust multi-step control flow (ScopeGuard -> Search -> Extract -> Process -> Report).
+- Explicit state management implemented across workflow nodes.
+- Handle APIs correctly (skips 403 blocks dynamically, handles Groq AI limits natively).
+
+### ✅ Structured Output & NLP Features
+- Extracted and integrated **Topics Clusters** and **Key Terms** seamlessly using LDA algorithm via backend tf-idf scores.
+- Original **Extractive Summaries** directly mapped to source URLs for transparency.
+- Full structural output returned correctly (Title, Abstract, Key Findings, Conclusion, Sources).
+
+### ✅ Enhanced UI & Extension
+- Streamlit UI acts as the unified frontend bridging user query to agent execution.
+- Added visual staggered status indicators for loading pipelines.
+- **Extension Chosen:** PDF Export. Developed on-the-fly markdown-to-PDF rendering capabilities integrating `fpdf` directly inside the frontend component to let operators easily download health reports securely offline.

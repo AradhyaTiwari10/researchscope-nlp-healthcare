@@ -55,7 +55,9 @@ def extract_node(state: dict) -> dict:
 def process_node(state: dict) -> dict:
     """Analyzes text vectors mathematically compiling sentences to summaries."""
     print("  => [Node: Process] Generating NLP vectors & summaries...")
-    state["summaries"] = process_articles(state["texts"])
+    summaries, topics = process_articles(state["texts"])
+    state["summaries"] = summaries
+    state["topics"] = topics
     return state
 
 def report_node(state: dict) -> dict:
@@ -117,6 +119,7 @@ def run_agent(query: str) -> dict:
         "search_results": [],
         "texts": [],
         "summaries": [],
+        "topics": [],
         "report": "",
         "is_medical": False
     }
