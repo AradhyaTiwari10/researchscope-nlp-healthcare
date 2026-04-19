@@ -36,7 +36,7 @@ def process_articles(text_data: List[Dict[str, str]]) -> List[Dict[str, str]]:
     # 1. Filter out empty or misformatted entries
     valid_data = [
         item for item in text_data 
-        if item.get("text") and item.get("url") and len(item["text"].split()) > 100
+        if item.get("text") and item.get("url") and len(item["text"].split()) > 60
     ]
     if not valid_data:
         return []
@@ -73,8 +73,8 @@ def process_articles(text_data: List[Dict[str, str]]) -> List[Dict[str, str]]:
             top_n=3
         )
         
-        # Quality Filter: Skip overly technical or short fragments (minimum 20 words)
-        if len(article_summary.split()) >= 20:
+        # Quality Filter: Skip overly technical or short fragments (minimum 12 words)
+        if len(article_summary.split()) >= 12:
             results.append({
                 "url": url,
                 "summary": article_summary

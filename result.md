@@ -322,3 +322,11 @@ Observe the logs to see `[Node: Search]` filtering for domains like `.nih.gov`, 
 - **Human-Centric Formatting**: Refined LLM behavior to avoid technical jargon and focus on real-world treatment impacts.
 
 ---
+
+### 🚀 Final Depth Enhancements
+- **Maximizing Coverage**: Increased the article intake limit from 5 to 8 to provide a broader context pool for research synthesis.
+- **Smart Sensitivity**: Relaxed word-count thresholds (from 100 to 60 for raw text; 20 to 12 for summaries) to prevent "data starvation" and preserve valuable mid-sized clinical insights.
+- **Dense Context Aggregation**: Implemented summary merging to feed the LLM a unified, information-dense block instead of isolated fragments.
+- **Forced Narrative Expansion**: Strengthened prompt engineering to explicitly command longer, multi-sentence sections and more detailed bullet point findings.
+
+---

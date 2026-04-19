@@ -42,30 +42,21 @@ def generate_report(query: str, summaries: list) -> str:
         return "Insufficient valid text extracted to generate a report."
         
     # 1. Collate Texts
-    combined_texts = []
-    urls = []
-    
     unique_summaries = list(set([item["summary"] for item in summaries]))
+    urls = list(set([item["url"] for item in summaries]))
     
-    for idx, text in enumerate(unique_summaries):
-        combined_texts.append(f"{idx+1}. {text}")
-        
-    for item in summaries:
-        if item["url"] not in urls:
-            urls.append(item["url"])
-            
-    # Combine securely
-    combined_context = "\n".join(combined_texts)
+    # Merge similar ones into a denser context block to force richer synthesis
+    combined_context = " ".join(unique_summaries)
     
     # Truncation safety: Flan-T5 restricts max token capacity to 512 normally
-    # We clip rough characters (1500 chars ~ 350-400 tokens) to ensure prompt fits
     if len(combined_context) > 1500:
         combined_context = combined_context[:1500] + "..."
         
     # 2. Design Prompt
-    prompt = f"""You are a medical research assistant.
+    prompt = f"""
+You are a medical research assistant.
 
-Using the summaries below, generate a clear and structured report.
+Using the summaries below, generate a detailed and structured report.
 
 STRICT FORMAT:
 
@@ -73,15 +64,15 @@ Title:
 <clear topic title>
 
 Abstract:
-Write 2-3 simple sentences explaining the topic in plain language.
+Write 3-4 sentences explaining the topic clearly.
 
 Key Findings:
-- Explain important insights in simple terms
-- Avoid technical jargon
-- Focus on meaning, not raw data
+- Provide at least 4-6 detailed bullet points
+- Explain insights in simple language
+- Combine information across sources
 
 Conclusion:
-Summarize overall importance and real-world impact
+Write 3-4 sentences summarizing importance and future impact
 
 Query: {query}
 
@@ -89,9 +80,10 @@ Summaries:
 {combined_context}
 
 IMPORTANT:
-- Simplify complex medical language
-- Do NOT copy sentences directly
-- Make it readable for a general audience
+- Do NOT give short answers
+- Expand explanations clearly
+- Combine multiple summaries into richer insights
+- Keep output detailed and readable
 """
     
     # 3. Generate Text via LLM

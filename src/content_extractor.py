@@ -45,8 +45,8 @@ def extract_article(url: str) -> dict:
             
         text = " ".join(text.split())
         
-        if len(text.split()) < 100:
-            print(f"  [-] Warning: Extracted text too short (<100 words) for {url}")
+        if len(text.split()) < 60:
+            print(f"  [-] Warning: Extracted text too short (<60 words) for {url}")
             return { "url": url, "text": "" }
             
         return {
@@ -60,7 +60,7 @@ def extract_article(url: str) -> dict:
             "text": ""
         }
 
-def extract_multiple(search_results: list, max_articles: int = 5) -> list:
+def extract_multiple(search_results: list, max_articles: int = 8) -> list:
     """
     Iterate over search results and extract articles, skipping failures 
     and capping the total downloaded.
@@ -90,4 +90,4 @@ def extract_multiple(search_results: list, max_articles: int = 5) -> list:
         if len(extracted_articles) >= max_articles:
             break
             
-    return extracted_articles[:5]
+    return extracted_articles[:8]
