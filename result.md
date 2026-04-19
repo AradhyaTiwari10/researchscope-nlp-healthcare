@@ -104,3 +104,38 @@ The system is now:
 * State-aware ✅
 * Ready for web integration ✅
 * Compatible with LangGraph workflows ✅
+
+---
+
+## Phase 2: Web Search Integration
+
+### Implementation Details
+
+* Integrated DuckDuckGo Search API to handle web retrieval without requiring authentication.
+* Created a reusable, stateless searching module designed specifically to fetch context for research queries.
+* Handled URL deduplication, error catching, and limiting output to the top 5 results to keep context concise for the LLM.
+* Updated `run_query.py` to pipe the retrieved dictionary directly into `state["urls"]`.
+
+### Modules Created
+
+* `src/web_search.py` → Executes secure, network-safe searches via DDGS.
+
+### Functions Implemented
+
+* `search_web(query: str) -> list` → Returns a structured list containing dictionaries with `title`, `url`, and `snippet`.
+
+### Example Output Structure
+
+```json
+[
+  {
+    "title": "A Review of AI in Cancer Detection",
+    "url": "https://example.com/paper",
+    "snippet": "This study explores how early..."
+  }
+]
+```
+
+### Role in Agent Workflow
+
+This phase officially transitions the pipeline from a sterile input state to a Retrieval-Augmented Generation (RAG) agent. By fetching top real-world results dynamically based on user prompts, the workflow acts as an AI Researcher that gathers its own context explicitly before doing extractive analysis or summarization.
