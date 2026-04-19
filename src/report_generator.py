@@ -21,8 +21,8 @@ def get_generator():
     global generator
     if generator is None:
         print("  [*] Loading HuggingFace model (Flan-T5-base)...")
+        # Let pipeline auto-infer the task type from the model architecture to prevent deprecated task string errors
         generator = pipeline(
-            "text2text-generation",
             model="google/flan-t5-base",
             max_new_tokens=400
         )
