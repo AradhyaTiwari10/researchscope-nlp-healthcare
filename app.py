@@ -35,10 +35,47 @@ def parse_report(report_text):
         pass
     return sections
 
-# UI Header Section
-st.title("🩺 ResearchScope NLP Healthcare")
-st.subheader("Interactive Pipeline Walkthrough Mode")
-st.warning("⚠️ Only healthcare-related queries are supported")
+# Custom Premium CSS Inject
+st.markdown("""
+<style>
+    .main-title {
+        font-size: 3.5rem !important;
+        font-weight: 800;
+        color: #0F172A;
+        text-align: center;
+        margin-bottom: -15px;
+        font-family: 'Inter', sans-serif;
+    }
+    .sub-title {
+        font-size: 1.25rem;
+        color: #64748B;
+        text-align: center;
+        margin-bottom: 30px;
+        font-family: 'Inter', sans-serif;
+    }
+    .stButton>button {
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    .stButton>button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .glass-card {
+        background: rgba(255, 255, 255, 0.7);
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# Modern UI Header
+st.markdown('<div class="main-title">🩺 ResearchScope AI</div>', unsafe_allow_html=True)
+st.markdown('<div class="sub-title">Autonomous Medical NLP Research Assistant</div>', unsafe_allow_html=True)
 
 # Handle Interactive Step-By-Step State
 if "step" not in st.session_state:
@@ -48,13 +85,15 @@ if "cache" not in st.session_state:
 if "current_query" not in st.session_state:
     st.session_state.current_query = ""
 
-# Example queries helping users start quickly
+# Premium Example Queries (Pill Layout)
 st.markdown("""
-### 🔍 Try these examples:
-- AI in cancer detection
-- diabetes treatment research
-- infectious disease prevention WHO
-""")
+<div class="glass-card" style="text-align: center; background-color: #F8FAFC;">
+    <span style="color: #475569; font-weight: 600; margin-right: 15px;">💡 Try an example query:</span>
+    <span style="background: #E0F2FE; color: #0284C7; padding: 6px 14px; border-radius: 20px; font-size: 0.9em; margin-right: 10px; font-weight: 500;">AI in cancer detection</span>
+    <span style="background: #E0F2FE; color: #0284C7; padding: 6px 14px; border-radius: 20px; font-size: 0.9em; margin-right: 10px; font-weight: 500;">Diabetes treatment research</span>
+    <span style="background: #E0F2FE; color: #0284C7; padding: 6px 14px; border-radius: 20px; font-size: 0.9em; font-weight: 500;">Infectious disease prevention WHO</span>
+</div>
+""", unsafe_allow_html=True)
 
 col_input, col_clear = st.columns([8, 1])
 with col_input:
