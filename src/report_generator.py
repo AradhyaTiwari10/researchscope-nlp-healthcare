@@ -14,7 +14,11 @@ Public API:
 """
 
 import os
+from dotenv import load_dotenv
 from groq import Groq
+
+# Auto-load .env file — works locally and on deployment servers
+load_dotenv()
 
 _client = None
 
@@ -48,10 +52,10 @@ def _run_prompt(prompt: str, max_tokens: int = 400) -> str:
     """
     client = get_client()
     response = client.chat.completions.create(
-        model="llama3-70b-8192",
+        model="llama-3.3-70b-versatile",
         messages=[{"role": "user", "content": prompt}],
         max_tokens=max_tokens,
-        temperature=0.4,  # Slightly creative but factual
+        temperature=0.4,
     )
     return response.choices[0].message.content.strip()
 
