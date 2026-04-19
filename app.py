@@ -46,9 +46,7 @@ st.markdown("""
         text-align: center;
         margin-bottom: -15px;
         font-family: 'Outfit', sans-serif;
-        background: linear-gradient(90deg, #00C9FF 0%, #92FE9D 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        color: #0ea5e9; /* Solid medical blue */
         animation: fadeInDown 1s ease-out;
     }
     
@@ -101,8 +99,8 @@ st.markdown("""
     }
 
     .pill-tag {
-        background: linear-gradient(135deg, #00C9FF 0%, #92FE9D 100%);
-        color: #000 !important;
+        background: #0ea5e9;
+        color: #ffffff !important;
         padding: 6px 16px;
         border-radius: 20px;
         font-size: 0.9em;
