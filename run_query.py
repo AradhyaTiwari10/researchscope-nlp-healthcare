@@ -23,7 +23,7 @@ def main():
     print("\n🔍 Executing Web Search...")
     # 3. Call search_web and store in state
     search_results = search_web(state["query"])
-    state["urls"] = search_results
+    state["search_results"] = search_results
     
     # 4. Output expectation match
     print("\nOutput:")

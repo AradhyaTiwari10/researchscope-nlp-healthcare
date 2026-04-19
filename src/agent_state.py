@@ -38,7 +38,7 @@ def initialize_state(query: str) -> dict:
     """
     state = {
         "query": query,
-        "urls": [],
+        "search_results": [],
         "texts": [],
         "summaries": [],
         "report": ""

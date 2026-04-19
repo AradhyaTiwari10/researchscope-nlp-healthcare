@@ -58,7 +58,7 @@ The system introduces a unified state object:
 ```json
 {
 "query": "...",
-"urls": [],
+"search_results": [],
 "texts": [],
 "summaries": [],
 "report": ""
@@ -114,7 +114,7 @@ The system is now:
 * Integrated DuckDuckGo Search API to handle web retrieval without requiring authentication.
 * Created a reusable, stateless searching module designed specifically to fetch context for research queries.
 * Handled URL deduplication, error catching, and limiting output to the top 5 results to keep context concise for the LLM.
-* Updated `run_query.py` to pipe the retrieved dictionary directly into `state["urls"]`.
+* Updated `run_query.py` to pipe the retrieved dictionary directly into `state["search_results"]`.
 
 ### Modules Created
 
