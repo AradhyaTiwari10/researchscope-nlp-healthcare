@@ -64,7 +64,7 @@ def process_articles(text_data: List[Dict[str, str]]) -> List[Dict[str, str]]:
     
     for idx, item in enumerate(valid_data):
         url = item["url"]
-        processed_text = processed_texts[idx]
+        original_text = item["text"]
         
         # Summarize logic uses TF-IDF to score internal processed mapping but extracts original sentences natively
         article_summary = summarize(
