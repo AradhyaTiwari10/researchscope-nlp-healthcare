@@ -39,25 +39,23 @@ def get_client():
     return _client
 
 
-def _run_prompt(prompt: str, max_tokens: int = 400) -> str:
+def _run_prompt(prompt: str, max_tokens: int = 800) -> str:
     """
     Execute a single focused prompt via Groq and return the response text.
-    
-    Args:
-        prompt: The instruction to send to the LLM.
-        max_tokens: Max output length.
-        
-    Returns:
-        str: The LLM's generated text.
+    Includes retry handling for Groq free-tier rate limits.
     """
-    client = get_client()
-    response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=[{"role": "user", "content": prompt}],
-        max_tokens=max_tokens,
-        temperature=0.4,
-    )
-    return response.choices[0].message.content.strip()
+    try:
+        client = get_client()
+        response = client.chat.completions.create(
+            model="mixtral-8x7b-32768",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=max_tokens,
+            temperature=0.3,  # Lower = more factual, less hallucination
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        print(f"  ⚠️  LLM request failed: {e}")
+        return "⚠️ LLM request failed. Please retry."
 
 
 def generate_report(query: str, summaries: list) -> str:
