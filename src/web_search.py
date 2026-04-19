@@ -32,46 +32,50 @@ def search_web(query: str) -> List[Dict[str, str]]:
     
     try:
         with DDGS() as ddgs:
-            # First attempt with full query
-            raw_results = list(ddgs.text(query, max_results=30))
-            
-            # If first attempt fails, try a simplified version (first 4 words)
-            if not raw_results:
-                simplified_query = " ".join(query.split()[:4])
-                if simplified_query != query:
-                    print(f"  [!] Primary search returned 0 results. Retrying with: '{simplified_query}'...")
-                    raw_results = list(ddgs.text(simplified_query, max_results=30))
-            
-            if not raw_results:
-                print(f"\n  [!] DuckDuckGo returned 0 results for this query.")
-                print(f"      (Try using core keywords instead of conversational sentences like 'latest cancer research')\n")
-                return []
-                
             TRUSTED_DOMAINS = [
                 "nih.gov",
                 "who.int",
                 "mayoclinic.org",
                 "cancer.gov",
                 "medicalnewstoday.com",
-                "sciencedaily.com"
+                "sciencedaily.com",
+                "nature.com",
+                "thelancet.com"
             ]
             
-            for res in raw_results:
-                url = res.get("href", "")
+            def fetch_and_filter(search_string):
+                pool = []
+                raw_results = list(ddgs.text(search_string, max_results=50))
+                if not raw_results:
+                    return pool
+                for res in raw_results:
+                    url = res.get("href", "")
+                    if url and url not in seen_urls:
+                        is_trusted = any(domain in url.lower() for domain in TRUSTED_DOMAINS)
+                        if is_trusted:
+                            seen_urls.add(url)
+                            pool.append({
+                                "title": res.get("title", ""),
+                                "url": url,
+                                "snippet": res.get("body", "")
+                            })
+                            if len(pool) >= 5:
+                                break
+                return pool
                 
-                # Filter out invalid, duplicate URLs or non-trusted sources
-                if url and url not in seen_urls:
-                    is_trusted = any(domain in url.lower() for domain in TRUSTED_DOMAINS)
-                    if is_trusted:
-                        seen_urls.add(url)
-                        results.append({
-                            "title": res.get("title", ""),
-                            "url": url,
-                            "snippet": res.get("body", "")
-                        })
-                    
-                if len(results) >= 5:
-                    break
+            results = fetch_and_filter(query)
+            
+            # If the strict trusted domain filter stripped all results or query returned 0, try simplified keywords
+            if not results:
+                simplified_query = " ".join(query.split()[:4])
+                if simplified_query != query:
+                    print(f"  [!] Trusted results empty for full query. Retrying with keywords: '{simplified_query}'...")
+                    results = fetch_and_filter(simplified_query)
+            
+            if not results:
+                print(f"\n  [!] DuckDuckGo returned 0 TRUSTED results for this query.")
+                print(f"      (Current strict filters active. Try adjusting keywords)\n")
+                return []
                     
     except Exception as e:
         print(f"⚠️ Error during web search: {e}")
