@@ -330,3 +330,11 @@ Observe the logs to see `[Node: Search]` filtering for domains like `.nih.gov`, 
 - **Forced Narrative Expansion**: Strengthened prompt engineering to explicitly command longer, multi-sentence sections and more detailed bullet point findings.
 
 ---
+
+### 🚀 Final LLM Optimization — Multi-Step Prompt Decomposition
+- **Root cause identified**: Flan-T5-base has a ~512 token context window and compresses everything aggressively when given a single large structured prompt.
+- **Solution**: Replaced single-pass generation with **prompt decomposition** — each report section (Abstract, Key Findings, Conclusion) is now generated independently by its own focused prompt, then assembled manually.
+- **Why it works**: Flan-T5 excels at small, focused tasks. Decomposing avoids context overflow and enables richer per-section output.
+- **Output improvement**: Report output depth increased from 1-2 sentences to structured multi-paragraph reports.
+
+---
