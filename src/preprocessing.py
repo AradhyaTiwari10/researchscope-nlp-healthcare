@@ -12,6 +12,7 @@ Responsibilities:
 
 Public API:
   preprocess(text: str) -> str
+  clean_text(text: str) -> str
 """
 
 import re
@@ -82,7 +83,7 @@ def _fix_ligatures(text: str) -> str:
     return text
 
 
-def _clean_text(text: str) -> str:
+def clean_text(text: str) -> str:
     """
     Apply all regex-based cleaning steps to raw text.
 
@@ -173,7 +174,7 @@ def preprocess(text: str) -> str:
     if not text or not text.strip():
         return ""
 
-    cleaned = _clean_text(text)
+    cleaned = clean_text(text)
     tokens = word_tokenize(cleaned.lower())
 
     processed_tokens = [

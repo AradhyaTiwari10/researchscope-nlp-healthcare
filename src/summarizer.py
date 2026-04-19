@@ -15,6 +15,7 @@ import nltk
 import re
 from nltk.tokenize import sent_tokenize
 from typing import Any
+from src.preprocessing import clean_text
 
 # Download required NLTK resources silently
 nltk.download("punkt", quiet=True)
@@ -57,8 +58,7 @@ def summarize(text: str, vectorizer: Any, num_sentences: int = 3) -> str:
 
     # 2. Basic cleanup for summarization (not the full linguistic preprocessing, 
     # to preserve readability of the output summary)
-    from src.preprocessing import _clean_text # Import private cleaner from local module
-    clean_abstract = _clean_text(abstract_text)
+    clean_abstract = clean_text(abstract_text)
     
     # 3. Tokenize sentences
     sentences = sent_tokenize(clean_abstract)
