@@ -1,58 +1,119 @@
-# ResearchScope NLP Healthcare: AI-Driven Research Analysis System
+# ResearchScope AI: Agentic Healthcare Research Assistant
 
 ![Project Banner](assets/banner.png)
 
 ## 🩺 Project Overview
-**ResearchScope NLP Healthcare** is an advanced AI-driven analytics system designed to bridge the gap between massive academic corpuses and actionable research insights. In the rapidly evolving healthcare sector, researchers are inundated with thousands of papers across genomics, clinical medicine, and predictive analytics. This system automates the ingestion, cleaning, and thematic analysis of these documents using mathematically rigorous **Classical NLP** techniques.
+**ResearchScope AI** is a state-of-the-art, agentic academic research assistant designed to automate the retrieval, analysis, and synthesis of medical research data. Traditional research is often hindered by information overload; ResearchScope solves this by utilizing an autonomous **LangGraph-based** architecture that orchestrates a multi-stage pipeline of data retrieval, mathematical NLP analysis, and generative intelligence.
 
-By leveraging probabilistic models and statistical vectorization, ResearchScope transforms unstructured PDF data into structured thematic clusters, cross-document similarity heatmaps, and concise extractive summaries—all without the "black-box" nature of Large Language Models.
+Unlike generic LLM wrappers, ResearchScope is built on a "Logic First" principle. It uses **Classical NLP** (TF-IDF and LDA) to pre-process and anchor all findings in mathematical evidence before utilizing a Large Language Model for synthesis, ensuring high academic integrity and reducing the risk of hallucinations.
 
 ---
 
-## 🚀 Key Features
+## 🚀 Key Innovations & Features
 
-### 1. Intelligent PDF Ingestion & Preprocessing
-- **Automated Extraction**: Robust text extraction from multi-column academic PDFs using `PyPDF2`.
-- **Regex-Based Noise Reduction**: Custom cleaning pipeline to remove scientific metadata artifacts:
-  - **Ligature & Hyphenation Repair**: Normalizes multi-character ligatures (e.g., "ﬁ", "ﬄ") and repairs words broken across lines.
-  - **Entity Filtering**: Removes DOIs, URLs, Email addresses, and all-caps section headers.
-  - **Citation Removal**: Automatically strips citation markers like `[15]` or `(2021)`.
-- **Lemmatization & Normalization**: NLTK-powered WordNet lemmitizer to ensure semantic consistency (e.g., "diagnosing", "diagnosed", and "diagnosis" are unified).
+### 1. Agentic Workflow (LangGraph)
+- **Autonomous Execution**: Manages the research lifecycle through a robust node-based state machine.
+- **ScopeGuard Security**: A deterministic intent-classifier that verifies medical context before processing, ensuring safe and domain-restricted results.
 
-### 2. Probabilistic Topic Discovery (LDA)
-- Employs **Latent Dirichlet Allocation** to identify latent thematic drivers across the corpus.
-- Automatically groups papers into high-level categories such as *Genomics*, *Clinical Risk Prediction*, and *Sensor-based Diagnostics*.
-- Provides a "Reliability Score" for each document's mapping to its dominant topic.
+### 2. Explainable AI & Interactive Walkthrough
+- **Pipeline Transparency**: A unique "Step-by-Step" UI mode that allows researchers to visually follow the data as it moves from raw URLs to NLP clusters to the final report.
+- **Educational Layer**: Explains the underlying theory (RAG, TF-IDF, LDA) as it executes, fostering trust in the system's output.
 
-### 3. Cross-Document Similarity Analysis
-- Uses **TF-IDF (Term Frequency-Inverse Document Frequency)** for robust vectorization.
-- Generates a **Cosine Similarity Matrix** to measure the "mathematical distance" between research papers.
-- Discover redundant findings or identify highly related works through interactive heatmaps.
+### 3. Rigorous Analytical Engine
+- **TF-IDF Vectorization**: Uses statistical weights to score and extract the most important sentences directly from peer-reviewed sources.
+- **LDA Topic Modeling**: Employs Latent Dirichlet Allocation to discover underlying thematic clusters across the returned research corpus.
 
-### 4. Smart Extractive Summarizer
-- Ranks sentences within the Abstract and Introduction based on TF-IDF weighting.
-- Sequences the top 3 high-impact sentences to provide a coherent "cliff-notes" version of the research methodology and findings.
+### 4. High-Performance Synthesis
+- **Groq LPU Acceleration**: Utilizes the Groq API (LLaMA 3.3 Versatile) for ultra-low latency inference.
+- **Prompt Decomposition**: Breaks down complex report generation into localized tasks (Abstract, Findings, Conclusion) for maximum detail retention.
 
-### 5. Interactive Dashboard
-- A sleek **Streamlit** UI for researchers to upload papers in real-time or explore our pre-loaded demo corpus of 10 seminal healthcare AI papers.
+### 5. Professional Export
+- **PDF Generation**: Dynamic on-the-fly markdown-to-PDF rendering for offline research archiving.
 
 ---
 
 ## 🛠️ System Architecture
 
+### Pipeline Transition: Milestone 1 to Milestone 2
+The system evolved from a linear script (Milestone 1) into a fully autonomous agentic graph (Milestone 2).
+
+**Agent Sequence Diagram:**
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant SG as ScopeGuard Node
+    participant S as Search Node
+    participant E as Extract Node
+    participant N as NLP Node
+    participant R as Report Node
+    
+    U->>SG: Submit Query
+    SG->>SG: Validate Medical Intent
+    SG->>S: Valid Query
+    S->>S: Filtered Web Retrieval
+    S->>E: Trusted URL List
+    E->>E: Clean HTML Parsing
+    E->>N: Clean Article Text
+    N->>N: TF-IDF & LDA Clustering
+    N->>R: Extractive Summaries + Topics
+    R->>R: Prompt Decomposition (Groq)
+    R->>U: Final Research Brief
+```
+
+**Architecture Flow:**
 ```mermaid
 graph TD
-    A[Academic PDFs] --> B[PyPDF2 Extraction]
-    B --> C[Regex Cleaning & Normalization]
-    C --> D[NLTK Tokenization & Lemmatization]
-    D --> E[TF-IDF Vectorization]
-    E --> F[LDA Topic Modeling]
-    E --> G[Cosine Similarity Engine]
-    C --> H[TF-IDF Ranked Summarizer]
-    F --> I[Streamlit Dashboard]
-    G --> I
+    %% Styling
+    classDef ui fill:#4CAF50,stroke:#388E3C,stroke-width:2px,color:white;
+    classDef agent fill:#2196F3,stroke:#1976D2,stroke-width:2px,color:white;
+    classDef nlp fill:#9C27B0,stroke:#7B1FA2,stroke-width:2px,color:white;
+    classDef llm fill:#E91E63,stroke:#C2185B,stroke-width:2px,color:white;
+
+    %% Nodes
+    A[User Input]:::ui
+    B{ScopeGuard Node: Medical Intent?}:::agent
+    Z[Reject: Out of Scope]:::ui
+    
+    C[Search Node: DuckDuckGo + Filter]:::agent
+    D[Extract Node: Newspaper3k Parsing]:::agent
+    
+    E[NLP Node: TF-IDF & LDA]:::nlp
+    F((Extractive Summaries)):::nlp
+    G((Thematic Topic Clusters)):::nlp
+    
+    H[Report Node: Groq LLaMA 3.3]:::llm
+    I{Prompt Decomposition}:::llm
+    
+    J[Structured Report & PDF Export]:::ui
+
+    %% Workflow
+    A --> B
+    B -- No --> Z
+    B -- Yes --> C
+    C --> D
+    D --> E
+    E --> F
+    E --> G
+    F --> H
     H --> I
+    I --> J
 ```
+
+---
+
+## 📊 Analytical Insights
+
+### Unsupervised Topic Discovery (LDA)
+The system automatically identifies latent thematic drivers across the research corpus. Below is a conceptual representation of how data is clustered:
+
+| Cluster ID | Sample Key Terms | Thematic Interpretation |
+| :--- | :--- | :--- |
+| **01** | *Detection, Imaging, Cancer, Diagnosis* | Early Diagnostic Methodologies |
+| **02** | *Treatment, Protocol, Clinical, Trials* | Therapeutic Interventions |
+| **03** | *Prevention, Public Health, WHO* | Epidemiological Strategies |
+
+### TF-IDF Statistical Anchoring
+Every sentence in the final summary is selected based on its **TF-IDF Score**, ensuring that the generated overview is statistically representative of the source papers rather than a generic hallucination.
 
 ---
 
@@ -60,67 +121,47 @@ graph TD
 
 | Layer | Technology |
 | :--- | :--- |
+| **Agent Orchestration** | LangGraph |
+| **Generative Brain** | Groq API (LLaMA 3.3 Versatile) |
 | **User Interface** | Streamlit |
-| **NLP Core** | NLTK, Scikit-Learn |
-| **Data Processing** | Pandas, NumPy, Regex |
-| **Feature Engineering** | TF-IDF, WordNet |
-| **Visualization** | Matplotlib, Seaborn, WordCloud, Altair |
-| **File Handling** | PyPDF2 |
+| **NLP Engine** | NLTK, Scikit-Learn (TF-IDF, LDA) |
+| **Content Retrieval** | DuckDuckGo Search, Newspaper3k |
+| **Reporting Tool** | FPDF |
+| **CI/CD** | GitHub Actions, Flake8 |
 
 ---
 
-## 📈 Milestones & Roadmap
+## ⚙️ Execution Guide
 
-### ✅ Milestone 1: Classical NLP Pipeline (Current)
-- [x] PDF text extraction and robust preprocessing.
-- [x] Feature engineering via TF-IDF.
-- [x] Topic Modeling using LDA.
-- [x] Cosine Similarity Heatmaps.
-- [x] Extractive Summarization engine.
-- [x] Functional Streamlit local & cloud dashboard.
-
-### 🔮 Milestone 2: Agentic Research Assistant
-- [ ] **Agentic Reasoning**: Integrating LangGraph for autonomous research exploration.
-- [ ] **RAG Implementation**: Vector storage using Chroma/FAISS for deep-context retrieval.
-- [ ] **Structured Insight Reports**: Generating PDF/Markdown research briefs.
-
----
-
-## ⚙️ Installation & Setup
-
-1. **Clone the Repository**
+1. **Environment Setup**
    ```bash
    git clone https://github.com/AradhyaTiwari10/researchscope-nlp-healthcare.git
    cd researchscope-nlp-healthcare
-   ```
-
-2. **Set up Virtual Environment**
-   ```bash
    python -m venv venv
-   source venv/bin/activate  # Mac/Linux
-   ```
-
-3. **Install Dependencies**
-   ```bash
+   source venv/bin/activate
    pip install -r requirements.txt
    ```
 
-4. **Run the Application**
+2. **API Configuration**
+   Create a `.env` file and add your Groq API Key:
+   ```env
+   GROQ_API_KEY="your_key_here"
+   ```
+
+3. **Launch the Dashboard**
    ```bash
    streamlit run app.py
    ```
 
 ---
 
-## 👥 The Team
-This project was developed by:
-* **Aradhya Tiwari**
-* **Sahil Chand**
-* **Aaryan Krishna**
-* **Vivek Kumar Raj**
+## 👥 The Research Team
+* **Aradhya Tiwari** - Lead Architect
+* **Sahil Chand** - NLP Specialist
+* **Aaryan Krishna** - Backend & Integration
+* **Vivek Kumar Raj** - UI/UX Design
 
 ---
 
-## 📄 License & Disclaimer
-*This project is built for academic research analysis. All data processed is from publicly available peer-reviewed papers. The system is designed for interpretability and does not use LLMs for its core logic.*
-
+## 📑 Acknowledgements
+This project is submitted as a final Year Capstone Project. It demonstrates a commitment to building Explainable, Ethical, and Scalable AI for the healthcare sector.

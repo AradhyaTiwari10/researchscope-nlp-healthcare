@@ -17,7 +17,6 @@ import os
 from dotenv import load_dotenv
 from groq import Groq
 
-# Auto-load .env file — works locally and on deployment servers
 load_dotenv()
 
 _client = None
@@ -77,14 +76,12 @@ def generate_report(query: str, summaries: list) -> str:
 
     print("  [*] Generating formal structure via LLM (Groq)...")
 
-    # 1. Prepare shared context
     unique_summaries = list(set([item["summary"] for item in summaries]))
     urls = list(set([item["url"] for item in summaries]))
     combined = " ".join(unique_summaries)
     if len(combined) > 2000:
         combined = combined[:2000] + "..."
 
-    # 2. Generate ABSTRACT
     abstract_prompt = (
         f"You are a medical research assistant helping a researcher.\n"
         f"Based on the following research summaries about '{query}', "
@@ -96,7 +93,6 @@ def generate_report(query: str, summaries: list) -> str:
     print("    [+] Generating Abstract...")
     abstract = _run_prompt(abstract_prompt, max_tokens=250)
 
-    # 3. Generate KEY FINDINGS
     findings_prompt = (
         f"You are a medical research assistant.\n"
         f"Based on the following research summaries about '{query}', "
@@ -108,7 +104,6 @@ def generate_report(query: str, summaries: list) -> str:
     )
     print("    [+] Generating Key Findings...")
     raw_findings = _run_prompt(findings_prompt, max_tokens=350)
-    # Normalize bullet point formatting and strip any LLM-generated noise headers
     finding_lines = [line.strip() for line in raw_findings.split("\n") if line.strip()]
     findings = "\n".join(
         f"- {line.lstrip('-').lstrip('*').lstrip('•').strip()}"
@@ -118,7 +113,6 @@ def generate_report(query: str, summaries: list) -> str:
            and not line.lower().startswith("the following")
     )
 
-    # 4. Generate CONCLUSION
     conclusion_prompt = (
         f"You are a medical research assistant.\n"
         f"Based on the following research summaries about '{query}', "
@@ -130,13 +124,10 @@ def generate_report(query: str, summaries: list) -> str:
     print("    [+] Generating Conclusion...")
     conclusion = _run_prompt(conclusion_prompt, max_tokens=250)
 
-    # 5. Auto-generate title from query
     title = f"Recent Advances in {query.title()}"
 
-    # 6. Format sources
     sources = "\n".join([f"- {url}" for url in urls])
 
-    # 7. Assemble full report
     report = f"""Title:
 {title}
 

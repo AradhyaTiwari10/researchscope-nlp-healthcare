@@ -29,7 +29,6 @@ def extract_article(url: str) -> dict:
     try:
         print(f"  [+] Downloading: {url}")
         
-        # Configure the scraper to look like a real browser to bypass 403 walls
         custom_config = Config()
         custom_config.browser_user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
         custom_config.request_timeout = 15
@@ -79,14 +78,11 @@ def extract_multiple(search_results: list, max_articles: int = 8) -> list:
         if not url:
             continue
             
-        # Parse the URL wrapper
         result = extract_article(url)
         
-        # Only preserve if we successfully pulled strings out
         if result["text"]:
             extracted_articles.append(result)
             
-        # Stop once we've reached our retrieval limit across valid pulls
         if len(extracted_articles) >= max_articles:
             break
             

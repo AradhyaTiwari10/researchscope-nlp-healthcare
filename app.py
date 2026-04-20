@@ -3,14 +3,12 @@ import re
 import time
 from dotenv import load_dotenv
 
-# Import the core NLP pipeline functions for manual execution
 from src.web_search import search_web
 from src.content_extractor import extract_multiple
 from src.nlp_processor import process_articles
 from src.report_generator import generate_report
 from src.utils import is_medical_query
 
-# Auto-load environment variables
 load_dotenv()
 
 st.set_page_config(
@@ -35,7 +33,6 @@ def parse_report(report_text):
         pass
     return sections
 
-# Custom Premium CSS Inject
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap');
@@ -117,11 +114,9 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Modern UI Header
 st.markdown('<div class="main-title">🩺 ResearchScope AI</div>', unsafe_allow_html=True)
 st.markdown('<div class="sub-title">Autonomous Medical NLP Research Assistant</div>', unsafe_allow_html=True)
 
-# Handle Interactive Step-By-Step State
 if "step" not in st.session_state:
     st.session_state.step = 0
 if "cache" not in st.session_state:
@@ -129,13 +124,12 @@ if "cache" not in st.session_state:
 if "current_query" not in st.session_state:
     st.session_state.current_query = ""
 
-# Premium Example Queries (Pill Layout)
 st.markdown("""
 <div class="glass-card" style="text-align: center;">
-    <span style="color: var(--text-color); font-weight: 600; margin-right: 15px;">💡 Try an example query:</span>
-    <span class="pill-tag">AI in cancer detection</span>
-    <span class="pill-tag">Diabetes treatment research</span>
-    <span class="pill-tag">Infectious disease prevention WHO</span>
+    <span style="color: var(--text-color); font-weight: 600; margin-right: 15px;">💡 Try these verified research topics:</span>
+    <span class="pill-tag" onclick="alert('Copy & paste: Diabetes management NIH')">Diabetes management NIH</span>
+    <span class="pill-tag" onclick="alert('Copy & paste: Heart disease prevention')">Heart disease prevention</span>
+    <span class="pill-tag" onclick="alert('Copy & paste: COVID-19 WHO updates')">COVID-19 WHO updates</span>
 </div>
 """, unsafe_allow_html=True)
 
@@ -151,7 +145,6 @@ with col_clear:
         st.session_state.current_query = ""
         st.rerun()
 
-# Reset state if the query changes
 if query != st.session_state.current_query and query != "":
     st.session_state.step = 0
     st.session_state.cache = {}
@@ -160,16 +153,12 @@ if query != st.session_state.current_query and query != "":
 if query:
     query_cleaned = query.strip().lstrip(">").strip()
     
-    # Check Scope First
     if not is_medical_query(query_cleaned):
         st.error("❌ OUT OF SCOPE: The ResearchScope agent is specialized for medical and healthcare research. Please enter a valid query.")
         st.stop()
 
     st.divider()
     
-    # ==========================================
-    # STEP 1: Search & Retrieval
-    # ==========================================
     col1_th, col1_act = st.columns([1, 1.5])
     with col1_th:
         st.markdown("### 1. Retrieval (RAG)")
@@ -188,9 +177,6 @@ if query:
             for res in results:
                 st.write(f"- 🔗 {res['url']}")
                 
-    # ==========================================
-    # STEP 2: Content Extraction
-    # ==========================================
     if st.session_state.step >= 1:
         st.divider()
         col2_th, col2_act = st.columns([1, 1.5])
@@ -211,9 +197,6 @@ if query:
                     count = len(txt['text'].split())
                     st.write(f"- Downloaded **{count} words** from {txt['url'].split('//')[-1].split('/')[0]}")
 
-    # ==========================================
-    # STEP 3: NLP Operations (TF-IDF & LDA)
-    # ==========================================
     if st.session_state.step >= 2:
         st.divider()
         col3_th, col3_act = st.columns([1, 1.5])
@@ -236,9 +219,6 @@ if query:
                 for idx, words in topics:
                     st.write(f"- **Cluster {idx+1}:** {', '.join(words)}")
 
-    # ==========================================
-    # STEP 4: LLM Synthesis
-    # ==========================================
     if st.session_state.step >= 3:
         st.divider()
         col4_th, col4_act = st.columns([1, 1.5])
@@ -258,14 +238,12 @@ if query:
             if st.session_state.step >= 4:
                 st.success(f"✅ Generated in {st.session_state.cache.get('exec_time', 0):.2f} seconds!")
                 
-                # --- RENDER FINAL PDF EXPORT AND REPORT ---
                 st.divider()
                 report = st.session_state.cache.get("report", "")
                 parsed = parse_report(report)
                 
                 st.header("Medical Context Report")
                 
-                # PDF GENERATION
                 topics_disp = "\n".join([f"Cluster {idx+1}: {', '.join(words)}" for idx, words in st.session_state.cache.get("topics", [])])
                 try:
                     from fpdf import FPDF
@@ -285,7 +263,6 @@ if query:
                 except:
                     pass
 
-                # RENDER TEXT
                 if parsed and "Title" in parsed:
                     st.markdown(f"*{parsed.get('Title', '')}*")
                     st.subheader("📘 Abstract")

@@ -20,10 +20,7 @@ from src.nlp_processor import process_articles
 from src.report_generator import generate_report
 from src.utils import is_medical_query
 
-# 1. State Schema
-# state = {"query": str, "search_results": list, "texts": list, "summaries": list, "report": str, "is_medical": bool}
 
-# 2. Define Nodes
 
 def check_scope_node(state: dict) -> dict:
     """Classifies query intent before search."""
@@ -66,11 +63,9 @@ def report_node(state: dict) -> dict:
     state["report"] = generate_report(state["query"], state["summaries"])
     return state
 
-# 3. Build Graph
 
 builder = StateGraph(dict)
 
-# Add isolated logical points
 builder.add_node("check_scope", check_scope_node)
 builder.add_node("rejection", rejection_node)
 builder.add_node("search", search_node)
@@ -78,16 +73,13 @@ builder.add_node("extract", extract_node)
 builder.add_node("process", process_node)
 builder.add_node("report", report_node)
 
-# Add logic for conditional routing
 def route_intent(state: dict):
     if state.get("is_medical"):
         return "medical"
     return "out_of_scope"
 
-# Set entry point
 builder.set_entry_point("check_scope")
 
-# Build conditional edge
 builder.add_conditional_edges(
     "check_scope",
     route_intent,
@@ -101,14 +93,11 @@ builder.add_edge("search", "extract")
 builder.add_edge("extract", "process")
 builder.add_edge("process", "report")
 
-# End states
 builder.add_edge("report", END)
 builder.add_edge("rejection", END)
 
-# Compile memory logic
 graph = builder.compile()
 
-# 4. Runner
 
 def run_agent(query: str) -> dict:
     """
@@ -124,6 +113,5 @@ def run_agent(query: str) -> dict:
         "is_medical": False
     }
     
-    # Run absolute
     result = graph.invoke(state)
     return result

@@ -1,0 +1,207 @@
+\documentclass[12pt,a4paper]{article}
+
+% Packages
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{verbatim}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+
+% Hyperref setup
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=blue,
+    pdftitle={ResearchScope NLP Healthcare Report},
+    pdfpagemode=FullScreen,
+}
+
+% Header and Footer
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{ResearchScope NLP Healthcare}
+\lhead{Capstone Project Report}
+\cfoot{\thepage}
+
+\title{
+    \Huge \textbf{ResearchScope NLP Healthcare} \\
+    \Large \textit{Agentic AI-Driven Research Analysis System}
+}
+\author{
+    \Large \textbf{Team Members:} \\
+    Aradhya Tiwari, Sahil Chand, Aaryan Krishna, Vivek Kumar Raj \\
+    \vspace{0.5cm} \\
+    \textbf{Institution:} \\
+    [Your Institution Name]
+}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\newpage
+
+\tableofcontents
+\newpage
+
+\section{Abstract}
+In the modern era, the exponential growth of healthcare research data has created a significant hurdle for practitioners and researchers attempt to stay abreast of the latest scientific advancements. Traditional manual research methodologies are increasingly inadequate for processing the sheer volume of publications. This report presents \textbf{ResearchScope NLP Healthcare}, an autonomous, agentic research system designed to bridge this gap.
+
+The system utilizes a hybrid architecture that integrates classical Natural Language Processing (NLP) techniques, such as Term Frequency-Inverse Document Frequency (TF-IDF) and Latent Dirichlet Allocation (LDA), with state-of-the-art agentic orchestration via LangGraph. By leveraging real-time web retrieval, automated content extraction, and structured synthesis through Large Language Models (LLMs) via the Groq API, ResearchScope transforms raw, unstructured web data into comprehensive, explainable research reports. The key innovation lies in its process transparency, offering a ``Pipeline Walkthrough'' mode that exposes the mathematical and logical operations behind every generated insight, ensuring clinical reliability and user trust.
+
+\section{Introduction}
+The healthcare sector is currently witnessing an unprecedented surge in digital research output. Thousands of papers are published monthly across various domains, including clinical medicine, genomics, and healthcare analytics. This information overload often leads to critical insights being buried in inaccessible repositories or lost in the noise of digital publications.
+
+For medical professionals, the ability to rapidly aggregate and synthesize information is not merely a convenience but a clinical necessity. However, manual research is slow, prone to bias, and difficult to scale. While Large Language Models (LLMs) have introduced new possibilities for automated summarization, they often function as ``black boxes,'' providing results without explaining the underlying evidence or methodology. ResearchScope address this by creating an explainable, autonomous pipeline that combines rigorous statistical analysis with generative intelligence.
+
+\section{Problem Statement}
+The primary challenges in current healthcare research methodologies include:
+\begin{enumerate}
+    \item \textbf{Manual Research Bottlenecks:} Searching, reading, and synthesizing multiple academic sources is labor-intensive and time-consuming.
+    \item \textbf{Black-Box AI Models:} Most current AI research tools provide answers without showing the work, making it difficult for researchers to verify the accuracy of the output.
+    \item \textbf{Data Inaccessibility:} Many high-value clinical insights are trapped in poorly structured web formats or hidden behind complex site architectures.
+    \item \textbf{Hallucination Risk:} Generative AI models, while powerful, are prone to creating false information (hallucinations) when fed raw, unfiltered data.
+\end{enumerate}
+
+\section{Proposed Solution}
+ResearchScope proposes a hybrid agentic solution that combines:
+\begin{itemize}
+    \item \textbf{Classical NLP for Reliability:} Using TF-IDF and LDA to mathematically ground the research results in statistical evidence.
+    \item \textbf{Agentic Orchestration (LangGraph):} An autonomous system that manages the entire research lifecycle, from query validation to final synthesis.
+    \item \textbf{Explainable UI:} An interactive interface that walkthrough the user through every step of the logical and mathematical process.
+\end{itemize}
+
+\section{System Architecture}
+The ResearchScope system architecture is built on a modular, node-based pipeline orchestrated by LangGraph. Each node represents a distinct phase of the research operation.
+
+\begin{verbatim}
++-------------------+       +-------------------+       +--------------------+
+|   User Query      | ----> |   ScopeGuard      | ----> |   Web Search       |
++-------------------+       +-------------------+       +--------------------+
+                                      |                          |
+                                      v                          v
++-------------------+       +-------------------+       +--------------------+
+|  LLM Generation   | <---- |   NLP Processing  | <---- | Content Extraction |
++-------------------+       +-------------------+       +--------------------+
+          |
+          v
++-------------------+
+|   Streamlit UI    |
++-------------------+
+\end{verbatim}
+
+\subsection{Architectural Components}
+\begin{enumerate}
+    \item \textbf{ScopeGuard:} Classifies the input intent to ensure only medical and healthcare queries are processed.
+    \item \textbf{Web Search:} Uses custom DuckDuckGo search adapters to find trusted clinical domains (NIH, WHO, PubMed).
+    \item \textbf{Content Extraction:} Employs the \texttt{newspaper3k} library to parse HTML and retrieve clean body text.
+    \item \textbf{NLP Processing:} Performs TF-IDF sentence ranking and LDA topic clustering.
+    \item \textbf{LLM Generation:} Synthesis the findings using Prompt Decomposition on the Groq API.
+    \item \textbf{Streamlit UI:} Displays results and provides an educational walkthrough of the pipeline.
+\end{enumerate}
+
+\section{Methodology}
+
+\subsection{Text Preprocessing}
+Before analysis, raw text must be converted into a machine-readable format. This involves:
+\begin{itemize}
+    \item \textbf{Tokenization:} Breaking text into individual words or sentences.
+    \item \textbf{Lemmatization:} Reducing words to their base or dictionary form (e.g., ``diagnosing'' becomes ``diagnose'').
+    \item \textbf{Normalization:} Removing stop words, punctuation, and correcting character ligatures common in scientific PDFs.
+\end{itemize}
+
+\subsection{TF-IDF (Term Frequency-Inverse Document Frequency)}
+To determine the importance of words across the research corpus, we utilize TF-IDF. This ensures that unique, high-value medical terms are prioritized over common grammatical words.
+
+The TF-IDF score is calculated as:
+\begin{equation}
+\text{TF-IDF}(t, d) = \text{TF}(t, d) \times \log\left(\frac{N}{\text{DF}(t)}\right)
+\end{equation}
+Where:
+\begin{itemize}
+    \item \textbf{TF(t, d):} Term Frequency - how many times term $t$ appears in document $d$.
+    \item \textbf{N:} Total number of documents in the corpus.
+    \item \textbf{DF(t):} Document Frequency - number of documents containing term $t$.
+\end{itemize}
+
+\subsection{Extractive Summarization}
+Unlike generative summaries which create new sentences, extractive summarization selects the most relevant original sentences from the researchers. By scoring sentences using TF-IDF weights, we ensure that the summary is 100\% anchored in the source material, significantly reducing the risk of hallucination.
+
+\subsection{LDA Topic Modeling}
+Latent Dirichlet Allocation (LDA) is used for unsupervised machine learning to discover latent themes. By analyzing the word distributions across the extracted text, the system identifies clusters of key terms that represent the primary research directions, providing an analytical overview of the thematic drivers in the search results.
+
+\section{Agentic Workflow (LangGraph)}
+The system is built as a stateful graph where each research stage is a node.
+\begin{itemize}
+    \item \textbf{ScopeGuard Node:} Serves as a deterministic safety filter.
+    \item \textbf{Search Node:} Performs adaptive retrieval and domain balancing.
+    \item \textbf{Extract Node:} Manages HTML cleaning and error recovery.
+    \item \textbf{Process Node:} Executes the statistical NLP engines.
+    \item \textbf{Report Node:} Triggers the multi-step generative LLM synthesis.
+\end{itemize}
+
+\section{Retrieval and Extraction}
+The system uses specialized domain filtering to prioritize academic sites like \texttt{ncbi.nlm.nih.gov} and trusted health organizations like the \texttt{who.int}. We utilize the \texttt{newspaper3k} library to bypass non-content debris (ads, sidebars) and retrieve raw research data even from complex site architectures.
+
+\section{LLM Integration and Prompt Decomposition}
+We utilize the Groq API running the \textbf{LLaMA 3.3 Versatile} model for high-speed synthesis. To ensure high-quality, structured reports, we implement \textbf{Prompt Decomposition}. 
+
+Instead of a single large prompt, the agent sends localized requests for:
+\begin{enumerate}
+    \item \textbf{Abstract:} Summary of the study and goals.
+    \item \textbf{Key Findings:} List of core insights.
+    \item \textbf{Conclusion:} Future impact and health implications.
+\end{enumerate}
+This modular approach ensures the LLM remains focused on specific sections, preventing detail loss and improving overall readability.
+
+\section{Interactive UI and Results}
+The Streamlit interface features a \textbf{Pipeline Walkthrough Mode}, where users can interactively trigger each stage of the research. This mode displays the mathematical reasoning (TF-IDF scores) and logical steps (URL selections) in real-time, serving as an educational tool for explainable AI.
+
+The final output is a structured report including:
+\begin{itemize}
+    \item Professional Title
+    \item Abstract, Key Findings, and Conclusion
+    \item Interactive Topic Clusters (NLP Analytics)
+    \item Verified Sources with active links
+    \item Export to PDF functionality
+\end{itemize}
+
+\section{Advantages and Limitations}
+\subsection{Advantages}
+\begin{itemize}
+    \item \textbf{Explainability:} Every claim is backed by extractive evidence and statistical scores shown in the UI.
+    \item \textbf{Speed:} Groq API allows for near-instant report generation.
+    \item \textbf{Safety:} ScopeGuard prevents out-of-domain usage.
+\end{itemize}
+
+\subsection{Limitations}
+\begin{itemize}
+    \item \textbf{Scraping Blocking:} Some sites use aggressive 403 blocks that limit data extraction.
+    \item \textbf{API Dependencies:} The system requires active Groq and DuckDuckGo connectivity.
+\end{itemize}
+
+\section{Future Work}
+Future iterations will focus on:
+\begin{itemize}
+    \item \textbf{Vector Database (FAISS):} Implementing full RAG for handling larger document repositories.
+    \item \textbf{User Collaboration:} Multi-researcher workspaces.
+    \item \textbf{Local LLM Deployment:} To ensure full data privacy without cloud APIs.
+\end{itemize}
+
+\section{Conclusion}
+ResearchScope NLP Healthcare successfully demonstrates the power of hybrid AI systems. By combining the statistical rigor of classical NLP with the autonomous reasoning of agentic workflows, we have built a tool that is fast, reliable, and fundamentally explainable. This system serves as a scalable solution for medical research synthesis in the age of information overload.
+
+\vspace{1cm}
+\begin{center}
+\textbf{GitHub Repository:} \url{https://github.com/AradhyaTiwari10/researchscope-nlp-healthcare}
+\end{center}
+
+\end{document}

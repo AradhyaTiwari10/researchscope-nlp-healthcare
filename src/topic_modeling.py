@@ -29,14 +29,12 @@ def get_topics(X: Any, vectorizer: Any, num_topics: int = 4, num_words: int = 10
         List[Tuple[int, List[str]]]: A list of topics, where each topic is a tuple 
                                      containing the topic index and a list of its top words.
     """
-    # Fit LDA model
     lda = LatentDirichletAllocation(
         n_components=num_topics,
         random_state=42
     )
     lda.fit(X)
     
-    # Extract topics
     feature_names = vectorizer.get_feature_names_out()
     topics = []
     
